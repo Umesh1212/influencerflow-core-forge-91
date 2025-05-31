@@ -1,188 +1,226 @@
-import React, { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
+
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, MoreHorizontal } from 'lucide-react';
-import NewCampaignWizard from '@/components/NewCampaignWizard';
-import { useNavigate } from 'react-router-dom';
-
-interface Campaign {
-  id: string;
-  name: string;
-  kpi: string;
-  budget: string;
-  status: 'draft' | 'sent' | 'signed' | 'live' | 'paid' | 'error';
-  updated: string;
-}
-
-const mockCampaigns: Campaign[] = [
-  {
-    id: '1',
-    name: 'Summer Fashion Collection',
-    kpi: 'Reach & Engagement',
-    budget: '$12,500',
-    status: 'live',
-    updated: '2 hours ago'
-  },
-  {
-    id: '2',
-    name: 'Tech Product Launch',
-    kpi: 'Conversions',
-    budget: '$8,000',
-    status: 'signed',
-    updated: '1 day ago'
-  },
-  {
-    id: '3',
-    name: 'Holiday Campaign 2024',
-    kpi: 'Brand Awareness',
-    budget: '$25,000',
-    status: 'draft',
-    updated: '3 days ago'
-  }
-];
-
-const StatusChip = ({ status }: { status: Campaign['status'] }) => {
-  const statusConfig = {
-    draft: { label: 'Draft', className: 'status-chip status-draft' },
-    sent: { label: 'Sent', className: 'status-chip status-sent' },
-    signed: { label: 'Signed', className: 'status-chip status-signed' },
-    live: { label: 'Live', className: 'status-chip status-live' },
-    paid: { label: 'Paid', className: 'status-chip status-paid' },
-    error: { label: 'Error', className: 'status-chip status-error' }
-  };
-
-  const config = statusConfig[status];
-  
-  return (
-    <span className={config.className}>
-      {config.label}
-    </span>
-  );
-};
-
-const SkeletonRow = () => (
-  <tr className="border-b border-subtle">
-    {[1, 2, 3, 4, 5].map((i) => (
-      <td key={i} className="px-6 py-4">
-        <div className="h-4 bg-surface-hover rounded animate-skeleton-pulse"></div>
-      </td>
-    ))}
-  </tr>
-);
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Users, DollarSign, TrendingUp, Calendar } from 'lucide-react';
+import { useCampaigns } from '@/hooks/useCampaigns';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Campaigns = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [isWizardOpen, setIsWizardOpen] = useState(false);
-  const navigate = useNavigate();
+  const { data: campaigns, isLoading, error } = useCampaigns();
+  const { userRole } = useAuth();
 
-  useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => {
-      setCampaigns(mockCampaigns);
-      setIsLoading(false);
-    }, 1500);
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-heading font-semibold">Campaigns</h1>
+            <p className="text-secondary">Manage your influencer marketing campaigns</p>
+          </div>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader>
+                <div className="h-4 bg-muted rounded w-3/4"></div>
+                <div className="h-3 bg-muted rounded w-1/2"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="h-3 bg-muted rounded"></div>
+                  <div className="h-3 bg-muted rounded w-2/3"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
-    return () => clearTimeout(timer);
-  }, []);
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-heading font-semibold">Campaigns</h1>
+            <p className="text-secondary">Manage your influencer marketing campaigns</p>
+          </div>
+        </div>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-muted-foreground">Error loading campaigns: {error.message}</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                This might be because you don't have the necessary permissions yet.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
-  const handleWizardComplete = () => {
-    // Navigate to Discovery page after campaign creation
-    navigate('/discovery');
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'live': return 'bg-green-100 text-green-800';
+      case 'draft': return 'bg-gray-100 text-gray-800';
+      case 'completed': return 'bg-blue-100 text-blue-800';
+      case 'signed': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-display text-primary font-semibold">Campaigns</h1>
-          <p className="text-body text-secondary">Manage your influencer marketing campaigns</p>
+          <h1 className="text-heading font-semibold">Campaigns</h1>
+          <p className="text-secondary">Manage your influencer marketing campaigns</p>
         </div>
-        <Button 
-          onClick={() => setIsWizardOpen(true)}
-          className="bg-primary-500 hover:bg-primary-600 text-white button-press focus-ring"
-        >
-          <Plus size={16} className="mr-2" />
-          New Campaign
-        </Button>
+        {(userRole === 'brand' || userRole === 'agency') && (
+          <Button className="bg-primary-500 hover:bg-primary-600 text-white">
+            <Plus size={16} className="mr-2" />
+            New Campaign
+          </Button>
+        )}
       </div>
 
-      {/* Campaigns Table */}
-      <Card className="bg-surface-elevated border border-subtle shadow-card">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-subhead text-primary">Active Campaigns</h2>
-            <Button variant="ghost" size="sm" className="text-secondary hover:text-primary focus-ring">
-              <MoreHorizontal size={16} />
-            </Button>
-          </div>
-
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-subtle">
-                  <th className="text-left px-6 py-3 text-label text-secondary">Name</th>
-                  <th className="text-left px-6 py-3 text-label text-secondary">KPI</th>
-                  <th className="text-left px-6 py-3 text-label text-secondary">Budget</th>
-                  <th className="text-left px-6 py-3 text-label text-secondary">Status</th>
-                  <th className="text-left px-6 py-3 text-label text-secondary">Updated</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading ? (
-                  <>
-                    <SkeletonRow />
-                    <SkeletonRow />
-                    <SkeletonRow />
-                  </>
-                ) : (
-                  campaigns.map((campaign) => (
-                    <tr 
-                      key={campaign.id} 
-                      className="border-b border-subtle card-hover cursor-pointer group"
-                    >
-                      <td className="px-6 py-4">
-                        <span className="text-body text-primary font-medium">{campaign.name}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-body text-secondary">{campaign.kpi}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-body text-primary font-medium">{campaign.budget}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <StatusChip status={campaign.status} />
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-caption text-secondary">{campaign.updated}</span>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {!isLoading && campaigns.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-body text-secondary mb-4">No campaigns found</p>
-              <Button className="bg-primary-500 hover:bg-primary-600 text-white button-press focus-ring">
-                <Plus size={16} className="mr-2" />
-                Create Your First Campaign
-              </Button>
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Campaigns</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {campaigns?.filter(c => c.status === 'live').length || 0}
             </div>
-          )}
-        </div>
-      </Card>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              ${campaigns?.reduce((sum, c) => sum + (Number(c.budget_numeric) || 0), 0).toLocaleString() || '0'}
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Creators</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {campaigns?.reduce((sum, c) => sum + (c.campaign_creators?.length || 0), 0) || 0}
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">This Month</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {campaigns?.filter(c => {
+                const created = new Date(c.created_at);
+                const now = new Date();
+                return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+              }).length || 0}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-      {/* New Campaign Wizard */}
-      <NewCampaignWizard
-        isOpen={isWizardOpen}
-        onClose={() => setIsWizardOpen(false)}
-        onComplete={handleWizardComplete}
-      />
+      {/* Campaigns List */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {campaigns && campaigns.length > 0 ? (
+          campaigns.map((campaign) => (
+            <Card key={campaign.id} className="hover:shadow-md transition-shadow">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg">{campaign.name}</CardTitle>
+                    <CardDescription>
+                      {campaign.brand?.name || 'Unknown Brand'}
+                    </CardDescription>
+                  </div>
+                  <Badge className={getStatusColor(campaign.status || 'draft')}>
+                    {campaign.status || 'draft'}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Budget:</span>
+                    <span className="font-medium">
+                      ${Number(campaign.budget_numeric || 0).toLocaleString()} {campaign.currency}
+                    </span>
+                  </div>
+                  
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Creators:</span>
+                    <span className="font-medium">
+                      {campaign.campaign_creators?.length || 0}
+                    </span>
+                  </div>
+                  
+                  {campaign.start_date && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Start Date:</span>
+                      <span className="font-medium">
+                        {new Date(campaign.start_date).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {campaign.brief && (
+                    <div className="mt-3">
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {campaign.brief}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="col-span-full">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <TrendingUp className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <h3 className="mt-2 text-sm font-semibold">No campaigns yet</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Get started by creating your first campaign.
+                  </p>
+                  {(userRole === 'brand' || userRole === 'agency') && (
+                    <div className="mt-6">
+                      <Button className="bg-primary-500 hover:bg-primary-600 text-white">
+                        <Plus size={16} className="mr-2" />
+                        Create Campaign
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

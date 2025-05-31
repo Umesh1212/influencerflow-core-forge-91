@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { Menu, X, BarChart3, Search, MessageSquare, FileText, CreditCard, TrendingUp, Settings, Plus } from 'lucide-react';
+import { Menu, X, BarChart3, Search, MessageSquare, FileText, CreditCard, TrendingUp, Settings, Plus, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 
 const navigationItems = [
   { name: 'Campaigns', path: '/', icon: BarChart3, isDefault: true },
@@ -18,10 +19,19 @@ const Layout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const location = useLocation();
+  const { signOut, userRole } = useAuth();
 
   const getBreadcrumb = () => {
     const currentItem = navigationItems.find(item => item.path === location.pathname);
     return currentItem ? currentItem.name : 'Home';
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   const NavItem = ({ item, mobile = false }: { item: typeof navigationItems[0], mobile?: boolean }) => {
@@ -78,6 +88,14 @@ const Layout = () => {
             {navigationItems.map((item) => (
               <NavItem key={item.name} item={item} mobile={true} />
             ))}
+            <Button
+              variant="ghost"
+              onClick={handleSignOut}
+              className="w-full justify-start gap-3 px-3 py-3 text-secondary hover:text-primary"
+            >
+              <LogOut size={20} />
+              Sign Out
+            </Button>
           </nav>
         </div>
       )}
@@ -92,6 +110,16 @@ const Layout = () => {
             <NavItem key={item.name} item={item} />
           ))}
         </nav>
+        <div className="p-4 border-t border-subtle">
+          <Button
+            variant="ghost"
+            onClick={handleSignOut}
+            className="w-full justify-center lg:justify-start gap-3 px-3 py-3 text-secondary hover:text-primary"
+          >
+            <LogOut size={20} />
+            <span className="hidden lg:block">Sign Out</span>
+          </Button>
+        </div>
       </aside>
 
       {/* Main Content */}
@@ -119,6 +147,11 @@ const Layout = () => {
 
           {/* Action Slot */}
           <div className="flex items-center gap-3">
+            {userRole && (
+              <span className="text-caption text-secondary capitalize">
+                {userRole}
+              </span>
+            )}
             {location.pathname === '/' && (
               <Button className="bg-primary-500 hover:bg-primary-600 text-white button-press focus-ring">
                 <Plus size={16} className="mr-2" />
@@ -129,7 +162,7 @@ const Layout = () => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 lg:p-6">
+        <main className="flex-1 p-4 lg:p-6" id="main-content">
           <Outlet />
         </main>
 
