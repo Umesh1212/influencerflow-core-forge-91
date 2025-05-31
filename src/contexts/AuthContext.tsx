@@ -32,6 +32,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const createUserProfileIfNeeded = async (user: User) => {
+    try {
+      // Check if user already exists in our users table
+      const { data: existingUser, error: fetchError } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (fetchError && fetchError.code === 'PGRST116') {
+        // User doesn't exist, create profile with default role 'brand'
+        const { error: createError } = await supabase
+          .from('users')
+          .insert({
+            id: user.id,
+            email: user.email!,
+            role: 'brand' as UserRole // Default role for Google sign-ins
+          });
+
+        if (createError) {
+          console.error('Error creating user profile:', createError);
+        } else {
+          setUserRole('brand');
+        }
+      } else if (existingUser) {
+        setUserRole(existingUser.role);
+      }
+    } catch (err) {
+      console.error('Error in createUserProfileIfNeeded:', err);
+    }
+  };
+
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -40,22 +72,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch user role from our users table
-          setTimeout(async () => {
-            try {
-              const { data, error } = await supabase
-                .from('users')
-                .select('role')
-                .eq('id', session.user.id)
-                .single();
-              
-              if (data && !error) {
-                setUserRole(data.role);
+          // Handle both OAuth and email sign-ins
+          if (event === 'SIGNED_IN') {
+            setTimeout(async () => {
+              await createUserProfileIfNeeded(session.user);
+            }, 0);
+          } else {
+            // For existing sessions, just fetch the role
+            setTimeout(async () => {
+              try {
+                const { data, error } = await supabase
+                  .from('users')
+                  .select('role')
+                  .eq('id', session.user.id)
+                  .single();
+                
+                if (data && !error) {
+                  setUserRole(data.role);
+                }
+              } catch (err) {
+                console.error('Error fetching user role:', err);
               }
-            } catch (err) {
-              console.error('Error fetching user role:', err);
-            }
-          }, 0);
+            }, 0);
+          }
         } else {
           setUserRole(null);
         }
