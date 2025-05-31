@@ -1,8 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, MoreHorizontal } from 'lucide-react';
+import NewCampaignWizard from '@/components/NewCampaignWizard';
+import { useNavigate } from 'react-router-dom';
 
 interface Campaign {
   id: string;
@@ -72,6 +73,8 @@ const SkeletonRow = () => (
 const Campaigns = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Simulate loading
@@ -83,21 +86,29 @@ const Campaigns = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  const handleWizardComplete = () => {
+    // Navigate to Discovery page after campaign creation
+    navigate('/discovery');
+  };
+
   return (
-    <div className="space-y-6 pb-20 lg:pb-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-heading text-primary mb-2">Campaigns</h1>
-          <p className="text-body text-secondary">Manage your influencer campaigns and track performance</p>
+          <h1 className="text-display text-primary font-semibold">Campaigns</h1>
+          <p className="text-body text-secondary">Manage your influencer marketing campaigns</p>
         </div>
-        <Button className="bg-primary-500 hover:bg-primary-600 text-white button-press focus-ring">
+        <Button 
+          onClick={() => setIsWizardOpen(true)}
+          className="bg-primary-500 hover:bg-primary-600 text-white button-press focus-ring"
+        >
           <Plus size={16} className="mr-2" />
           New Campaign
         </Button>
       </div>
 
-      {/* Main Content Card */}
+      {/* Campaigns Table */}
       <Card className="bg-surface-elevated border border-subtle shadow-card">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
@@ -165,6 +176,13 @@ const Campaigns = () => {
           )}
         </div>
       </Card>
+
+      {/* New Campaign Wizard */}
+      <NewCampaignWizard
+        isOpen={isWizardOpen}
+        onClose={() => setIsWizardOpen(false)}
+        onComplete={handleWizardComplete}
+      />
     </div>
   );
 };

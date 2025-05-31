@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 
 const navigationItems = [
   { name: 'Campaigns', path: '/', icon: BarChart3, isDefault: true },
-  { name: 'Discovery', path: '/discovery', icon: Search, disabled: true },
-  { name: 'Inbox', path: '/inbox', icon: MessageSquare, disabled: true },
+  { name: 'Discovery', path: '/discovery', icon: Search },
+  { name: 'Inbox', path: '/inbox', icon: MessageSquare },
   { name: 'Contracts', path: '/contracts', icon: FileText, disabled: true },
   { name: 'Payments', path: '/payments', icon: CreditCard, disabled: true },
   { name: 'Performance', path: '/performance', icon: TrendingUp },
