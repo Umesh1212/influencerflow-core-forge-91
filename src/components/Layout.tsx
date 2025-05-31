@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { Menu, X, BarChart3, Search, MessageSquare, FileText, CreditCard, TrendingUp, Settings, Plus, LogOut } from 'lucide-react';
+import { Menu, X, BarChart3, Search, MessageSquare, FileText, CreditCard, TrendingUp, Settings, Plus, LogOut, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -18,6 +18,7 @@ const navigationItems = [
 const Layout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isMenuExpanded, setIsMenuExpanded] = useState(true);
   const location = useLocation();
   const { signOut, userRole } = useAuth();
 
@@ -35,7 +36,8 @@ const Layout = () => {
   };
 
   const NavItem = ({ item, mobile = false }: { item: typeof navigationItems[0], mobile?: boolean }) => {
-    const isActive = location.pathname === item.path;
+    const isActive = location.pathname === item.path || 
+                    (item.isDefault && location.pathname === '/');
     
     return (
       <NavLink
@@ -44,6 +46,7 @@ const Layout = () => {
           flex items-center gap-3 px-3 py-3 rounded-default transition-all duration-200 min-tap focus-ring
           ${linkActive || isActive ? 'bg-primary-500 text-white' : 'text-secondary hover:bg-surface-hover hover:text-primary'}
           ${mobile ? 'text-body' : 'text-caption'}
+          w-full justify-${isMenuExpanded ? 'start' : 'center'}
         `}
         onClick={() => {
           if (mobile) {
@@ -52,13 +55,15 @@ const Layout = () => {
         }}
       >
         <item.icon size={20} className="flex-shrink-0" />
-        <span className={mobile ? 'block' : 'hidden lg:block'}>{item.name}</span>
+        {(mobile || isMenuExpanded) && (
+          <span className="truncate">{item.name}</span>
+        )}
       </NavLink>
     );
   };
 
   return (
-    <div className="min-h-screen bg-bg-default text-text-primary w-full">
+    <div className="min-h-screen bg-bg-default text-text-primary w-full flex">
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div 
@@ -101,31 +106,56 @@ const Layout = () => {
       )}
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-rail lg:flex-col bg-surface-elevated border-r border-subtle">
-        <div className="flex items-center justify-center h-topbar border-b border-subtle">
-          <div className="w-8 h-8 bg-accent-gradient rounded-default"></div>
+      <aside className={`hidden lg:flex lg:flex-shrink-0 ${isMenuExpanded ? 'lg:w-56' : 'lg:w-16'} lg:flex-col bg-surface-elevated border-r border-subtle h-screen sticky top-0 transition-all duration-300`}>
+        <div className="flex h-topbar border-b border-subtle w-full">
+          {isMenuExpanded ? (
+            <div className="flex items-center justify-between w-full px-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-default flex-shrink-0"></div>
+                <span className="text-sm font-medium text-text-primary">InfluencerFlow</span>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setIsMenuExpanded(!isMenuExpanded)}
+                className="min-tap focus-ring text-secondary hover:text-primary flex-shrink-0">
+                <ChevronLeft size={18} />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center w-full h-full">
+              <div className="mx-auto w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-default"></div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setIsMenuExpanded(!isMenuExpanded)}
+                className="min-tap focus-ring text-secondary hover:text-primary absolute right-0 top-[10px]">
+                <ChevronRight size={18} />
+              </Button>
+            </div>
+          )}
         </div>
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-2 space-y-2 overflow-y-auto">
           {navigationItems.map((item) => (
             <NavItem key={item.name} item={item} />
           ))}
         </nav>
-        <div className="p-4 border-t border-subtle">
+        <div className="p-2 border-t border-subtle">
           <Button
             variant="ghost"
             onClick={handleSignOut}
-            className="w-full justify-center lg:justify-start gap-3 px-3 py-3 text-secondary hover:text-primary"
+            className={`w-full ${isMenuExpanded ? 'justify-start' : 'justify-center'} gap-3 px-3 py-3 text-secondary hover:text-primary`}
           >
             <LogOut size={20} />
-            <span className="hidden lg:block">Sign Out</span>
+            {isMenuExpanded && <span>Sign Out</span>}
           </Button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <div className="lg:pl-rail">
+      <div className="flex-1 flex flex-col">
         {/* Top Header */}
-        <header className="h-topbar bg-surface-elevated border-b border-subtle flex items-center justify-between px-4 lg:px-6">
+        <header className="h-topbar bg-surface-elevated border-b border-subtle flex items-center justify-between px-4 lg:px-6 sticky top-0 z-10">
           <div className="flex items-center gap-4">
             {/* Mobile Menu Button */}
             <Button
@@ -162,15 +192,16 @@ const Layout = () => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 lg:p-6" id="main-content">
+        <main className="flex-1 p-4 lg:p-6 min-h-[calc(100vh-var(--topbar-height))]" id="main-content">
           <Outlet />
         </main>
 
         {/* Mobile Bottom Navigation */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface-elevated border-t border-subtle">
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface-elevated border-t border-subtle z-30">
           <div className="flex items-center justify-around py-2">
             {navigationItems.slice(0, 5).map((item) => {
-              const isActive = location.pathname === item.path;
+              const isActive = location.pathname === item.path || 
+                              (item.isDefault && location.pathname === '/');
               return (
                 <NavLink
                   key={item.name}
@@ -180,7 +211,7 @@ const Layout = () => {
                   }`}
                 >
                   <item.icon size={20} />
-                  <span className="text-xs">{item.name}</span>
+                  <span className="text-xs truncate">{item.name}</span>
                 </NavLink>
               );
             })}

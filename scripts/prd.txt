@@ -1,0 +1,174 @@
+Product Requirements Document
+Product: InfluencerFlow AI Platform
+Version: 1.0 (MVP scope)
+Date: 31 May 2025
+
+1. Vision
+InfluencerFlow makes influencer campaigns as easy as running paid ads. Brands find creators, automate outreach, sign contracts, pay on milestones, and watch real-time ROI. Creators get clear briefs, fast payments, and a portal in their own language.
+
+2. Goals and Success Metrics
+Goal	Metric	Target
+Faster campaign launch	Median hours from brief to signed contract	< 48 h
+Higher creator response	Reply rate within 24 h	≥ 60 %
+Smoother payouts	Average days to release creator payment	< 5
+ROI clarity	Campaigns with cost-per-view shown	100 %
+
+3. Personas
+Brand Marketer – owns the budget, cares about speed and clear reporting.
+
+Agency Strategist – juggles many brands, values bulk workflows and audit trails.
+
+Creator (Emerging-market) – wants fair pay, quick cash-out, and local language support.
+
+Finance & Legal Reviewer – approves contracts and payments.
+
+Platform Admin – guards data quality and policy compliance.
+
+4. High-level Journeys
+Journey	Key steps	Happy-path outcome
+Launch campaign	Brief → Discovery → Shortlist → Outreach → Sign	Campaign Live
+Negotiate	Inbox chat + counter offer	Mutual Accept
+Pay and track	Invoice paid → Milestone met → Payout released	KPI dashboard updated
+Creator onboarding	OAuth login → Stats import → Bank setup	Ready for offers
+Admin oversight	Data health screen → Flag issues	Clean dataset
+
+5. Functional Requirements (MVP)
+5.1 Creator Discovery
+Prompt search with filters (platform, category, language, country, engagement).
+
+Creator cards show reach, engagement, audience split, past deals.
+
+Add to campaign shortlist, export CSV.
+
+5.2 Outreach and Negotiation
+One-click multilingual email + optional voice note.
+
+Chat thread stores all messages and file attachments.
+
+Creator can Accept, Counter, or Decline inside portal.
+
+5.3 Contract Automation
+Auto-generate PDF from template with variable merge.
+
+E-signature via DocuSign redirect; status chips in list view.
+
+5.4 Payments
+Invoice generated on signature; brand pays via Stripe or Razorpay.
+
+Milestone scheduler releases creator payout after verification.
+
+Ledger per campaign; GST/TDS support for India flagged as later phase.
+
+5.5 Performance Dashboard
+Pull post metrics via Instagram Graph and YouTube Data APIs.
+
+KPI cards and line chart update at five-minute intervals.
+
+Export PDF or CSV report.
+
+5.6 Admin Console
+CRUD for users and roles.
+
+Data health widgets for missing metrics or failed webhooks.
+
+Suspend or flag accounts.
+
+6. Non-functional Requirements
+Scalability ten thousand active campaigns and one million creator records.
+
+Performance P95 API response below 400 ms.
+
+Security JWT, role-based access, TLS, passwordless login via Supabase Auth.
+
+Compliance GDPR, Indian IT Rules, PCI through Stripe, KYC on payouts.
+
+Localization eight UI languages and prompt templates.
+
+Accessibility WCAG 2.1 AA, keyboard complete.
+
+7. Information Architecture
+Zone	Primary screens
+Public	Home, Features, Pricing, Docs, Sign in
+Auth App	Campaigns, Discovery, Inbox, Contracts, Payments, Performance, Settings
+Creator Portal	Offers, Chat, Contracts, Payouts, Profile
+Admin Console	Dashboard, Users, Creator Vetting, Campaign Audit
+
+URLs follow pattern /app/<section> and /creator/<section> with numeric IDs for details.
+
+8. Design System (dark theme)
+Colors bg #0D0E12, surface #1A1C22, hover #23262D, primary blue #3B82F6, teal success #14B8A6, red #EF4444, yellow #FACC15, gradient blue→teal.
+
+Typography Inter Display 32, Heading 24, Subheading 20, Body 16, Caption 14, Label 12 CAPS.
+
+Spacing 4 8 12 16 24 32.
+
+Surfaces radius 8, card shadow 0 1 2 rgba(0,0,0,.12), dialog shadow 0 4 8 rgba(0,0,0,.16).
+
+Components Button, Input, Table, Card, Tag chip, Stepper wizard, Toast, Drawer.
+
+Layouts 12-col grid, 72 px left rail, breadcrumb top bar, right detail drawer, bottom tab bar on mobile.
+
+9. Data Model (tables)
+users (id, role, locale, brand_id?, creator_id?)
+
+brands (id, name, billing_id)
+
+creators (id, social_ids, stats_json, languages, payout_method)
+
+campaigns (id, brand_id, brief, budget, status)
+
+campaign_creators (id, campaign_id, creator_id, quote, status)
+
+contracts (id, campaign_creator_id, pdf_url, e_sig_state)
+
+invoices (id, campaign_id, amount, currency, paid_at)
+
+payouts (id, creator_id, campaign_id, milestone, released_at)
+
+posts (id, campaign_creator_id, platform, url, metrics_json)
+
+messages (id, campaign_creator_id, sender_id, body, voice_url)
+
+10. Tech Stack Overview
+Layer	Choice
+Frontend	Next.js 14, React Query, ShadCN + Tailwind
+Auth	Supabase Auth (email + Google)
+Backend	FastAPI, async routers
+Database	Supabase Postgres with row level security
+Search	Pinecone for vector index
+Cache & Jobs	Redis queues
+Storage	Supabase Storage for PDFs and media
+AI/ML	OpenAI GPT-4o, ElevenLabs voice, Whisper STT
+Payments	Stripe global, Razorpay India
+Hosting	Vercel (FE) + AWS EKS (BE)
+Monitoring	Sentry, PostHog
+
+11. Release Plan
+Phase	Weeks	Output
+0 Prep	1	Final PRD, design tokens, low-fi wireframes
+1 Front-end	2-4	Lovable-generated UI, responsive pages, component kit
+2 Schema & Auth	5-6	Supabase tables, RLS, Google login
+3 Core Logic	7-9	Discovery search pipeline, Inbox chat, contract PDF
+4 Payments & Tracker	10-11	Stripe/Razorpay sandbox, IG/YT puller, dashboard
+5 QA & Demo	12	Live demo link, 2-min video, MIT repo push
+
+12. Acceptance Criteria
+A user completes a full campaign loop in demo with mock data.
+
+Creator can accept and sign contract through portal.
+
+Invoice shows as paid in test mode, payout released.
+
+Dashboard displays live metrics within ten minutes of simulated post.
+
+All screens pass axe accessibility audit.
+
+13. Risks and Mitigations
+Risk	Impact	Mitigation
+API quotas	Missing metrics	Cache, staggered fetch jobs
+GPT translation errors	Tone mismatch	Human editable templates
+Payment compliance	Launch delay	Start with INR and USD only
+Data privacy	Legal penalties	Privacy by design, user consents
+
+14. Out of Scope for MVP
+TikTok integration, automated fraud detection, payroll taxes for every market.
