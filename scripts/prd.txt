@@ -1,174 +1,125 @@
-Product Requirements Document
-Product: InfluencerFlow AI Platform
-Version: 1.0 (MVP scope)
-Date: 31 May 2025
+Product Requirements Document: InfluencerFlow AI Platform
+Version: 1.0
+Date: [Current Date]
+Project Handle: opraahfx
+Category: AI Agents
 
-1. Vision
-InfluencerFlow makes influencer campaigns as easy as running paid ads. Brands find creators, automate outreach, sign contracts, pay on milestones, and watch real-time ROI. Creators get clear briefs, fast payments, and a portal in their own language.
+1. Introduction & Vision
+-------------------------
+Influencer marketing is a rapidly growing industry, yet it's hampered by manual, inefficient, and fragmented processes. InfluencerFlow AI Platform aims to revolutionize this space by providing an AI-powered, automated solution that streamlines the entire influencer marketing workflow. Our vision is to create a unified ecosystem where brands and creators can connect, collaborate, and transact with unprecedented ease, speed, accuracy, and fairness, facilitated by intelligent automation and personalized interactions.
 
-2. Goals and Success Metrics
-Goal	Metric	Target
-Faster campaign launch	Median hours from brief to signed contract	< 48 h
-Higher creator response	Reply rate within 24 h	≥ 60 %
-Smoother payouts	Average days to release creator payment	< 5
-ROI clarity	Campaigns with cost-per-view shown	100 %
+2. Goals
+---------
+- To automate and streamline the end-to-end influencer marketing workflow, from discovery to payment and reporting.
+- To reduce the manual effort and inefficiencies currently faced by brands, agencies, and creators.
+- To improve transparency, consistency, and fairness in influencer collaborations, especially for creators in emerging markets.
+- To provide a scalable solution capable of managing high volumes of campaigns effectively.
+- To leverage AI for personalized outreach, negotiation, and intelligent recommendations.
 
-3. Personas
-Brand Marketer – owns the budget, cares about speed and clear reporting.
+3. Target Audience / User Personas (Implicit)
+-------------------------------------------
+- **Brands/Marketing Agencies:** Seeking efficient discovery, scalable outreach, automated contract/payment processes, and clear ROI tracking.
+- **Creators (especially in emerging markets):** Seeking fair opportunities, clear communication (multilingual), timely payments, and professional interaction.
+- **Platform Administrators:** Requiring tools for user management, data health monitoring, and platform oversight.
 
-Agency Strategist – juggles many brands, values bulk workflows and audit trails.
+4. Problem Statement
+--------------------
+Influencer marketing is growing rapidly, but the process remains highly manual, inefficient, and fragmented. Brands and agencies struggle with discovering the right creators, reaching out at scale, negotiating deals, handling contracts, tracking performance, and processing payments- often across spreadsheets, emails, and WhatsApp. This leads to missed opportunities, slow turnarounds, inconsistent pricing, and a poor experience for both creators and marketers.
 
-Creator (Emerging-market) – wants fair pay, quick cash-out, and local language support.
+On the other side, creators - especially in emerging markets -face language barriers, delayed payments, and unclear expectations, as most lack professional management. There is no unified platform that brings automation, Al, and personalization to streamline this ecosystem.
 
-Finance & Legal Reviewer – approves contracts and payments.
+The industry needs a scalable solution that can manage high volumes of campaigns while delivering speed, accuracy, and fairness.
 
-Platform Admin – guards data quality and policy compliance.
+5. Proposed Solution: InfluencerFlow AI Platform
+----------------------------------------------
+We aim to solve this by building an AI-powered platform that automates the entire influencer marketing workflow from creator discovery and outreach to negotiation, contracts, payments, and performance reporting - with multilingual communication and human-like AI agents that can scale personalized interactions. All backend logic, API integrations, and AI orchestrations will be handled using Supabase (Database, Auth, Storage, and Edge Functions written in TypeScript/Deno).
 
-4. High-level Journeys
-Journey	Key steps	Happy-path outcome
-Launch campaign	Brief → Discovery → Shortlist → Outreach → Sign	Campaign Live
-Negotiate	Inbox chat + counter offer	Mutual Accept
-Pay and track	Invoice paid → Milestone met → Payout released	KPI dashboard updated
-Creator onboarding	OAuth login → Stats import → Bank setup	Ready for offers
-Admin oversight	Data health screen → Flag issues	Clean dataset
+6. Functional Requirements (Expected Outcome / Key Features)
+---------------------------------------------------------
+**6.1. Creator Discovery Engine**
+    - A searchable, filterable database of creators (data stored in Supabase PostgreSQL) across platforms (YouTube, Instagram, etc.).
+    - AI-powered prompt search that returns relevant creator recommendations (logic in Supabase Edge Function calling embedding and search services, or performing vector search within Postgres itself).
+    - Creator profile cards with audience insights, engagement metrics, and past collaborations (data fetched from Supabase DB).
 
-5. Functional Requirements (MVP)
-5.1 Creator Discovery
-Prompt search with filters (platform, category, language, country, engagement).
+**6.2. AI Outreach & Negotiation System**
+    - Automated email and voice-based outreach in the creator's preferred language (orchestrated by Supabase Edge Functions calling LLM, Translation, ElevenLabs, and Email APIs).
+    - AI agent capable of handling basic negotiation (rates, deliverables, timelines) (logic within Supabase Edge Functions, state managed in Supabase DB, calling LLM APIs).
+    - All communications logged in a CRM-style interface (data in Supabase DB, real-time updates via Supabase Realtime).
 
-Creator cards show reach, engagement, audience split, past deals.
+**6.3. Contract Automation**
+    - Auto-generated contracts based on confirmed deals (Supabase Edge Function generating PDF from template, using data from Supabase DB).
+    - E-signature integration (e.g., DocuSign or similar, called from Supabase Edge Function) and contract status tracking (in Supabase DB).
 
-Add to campaign shortlist, export CSV.
+**6.4. Payments Module**
+    - Smart invoicing and milestone-based payout flow (logic in Supabase Edge Functions, data in Supabase DB).
+    - Dashboard for creators and brands to track payments (frontend calls Supabase directly or via simple getter Edge Functions).
+    - Stripe/Razorpay integration for payment processing (webhook handling and API calls managed by Supabase Edge Functions).
 
-5.2 Outreach and Negotiation
-One-click multilingual email + optional voice note.
+**6.5. Campaign Tracker & Performance Dashboard**
+    - Real-time tracking of creator content via API integrations (Supabase Edge Functions periodically calling YouTube/Instagram APIs, storing results in Supabase DB).
+    - Auto-generated performance reports (views, engagement, ROI, etc.) (data aggregation by Supabase Edge Functions or complex SQL views, served to frontend).
 
-Chat thread stores all messages and file attachments.
+**6.6. Admin Panel**
+    - Tools to manage creators, users, campaigns, and data health (frontend directly interacts with Supabase DB using RLS, or via admin-specific Edge Functions).
+    - Role-based access for brands, agencies, creators, and internal admins (leveraging Supabase Auth roles and RLS).
 
-Creator can Accept, Counter, or Decline inside portal.
+7. MVP Scope & Functional Requirement
+-------------------------------------
+**7.1. MVP Live Demo Goal:**
+    - A working version of the platform demonstrating an end-to-end campaign lifecycle:
+      (Search → Outreach → Deal → Contract → Payment → Report) through mock or live data.
 
-5.3 Contract Automation
-Auto-generate PDF from template with variable merge.
+**7.2. MVP Core End-to-End Use Case Requirement:**
+    - All modules listed in Section 6 must be functional to support at least one complete end-to-end use case for the demo.
 
-E-signature via DocuSign redirect; status chips in list view.
+8. Technical Requirements & Tech Stack Overview
+---------------------------------------------
+**8.1. Frontend**
+    - Framework: React.js or Next.js (preferred for SSR and scalability) with Vite.
+    - Styling: Tailwind CSS or ShadCN UI components.
+    - State Management: React Query or Zustand (for API/data state).
+    - Supabase Client: `supabase-js` for direct interaction with Supabase services.
 
-5.4 Payments
-Invoice generated on signature; brand pays via Stripe or Razorpay.
+**8.2. Backend & Core Infrastructure (Supabase Only)**
+    - **Database:** Supabase PostgreSQL (for structured creator, campaign, transaction data, etc.).
+    - **Authentication:** Supabase Auth (Google OAuth preferred, email/password).
+    - **Server-Side Logic & APIs:** Supabase Edge Functions (TypeScript/Deno) for all business logic, external API calls, AI orchestration, and serving any custom API endpoints if needed beyond direct DB access.
+    - **Storage:** Supabase Storage (for media, contract PDFs, generated voice files).
+    - **Real-time Features:** Supabase Realtime (e.g., for chat, notifications).
+    - **Search Layer:** Supabase vector columns with pgVector for semantic search, or Edge Functions calling external search APIs like Pinecone/Elasticsearch if absolutely necessary (preference for Supabase internal capabilities).
+    - **Caching/Queueing:** Redis or RabbitMQ (if complex background jobs are needed beyond Supabase's capabilities, this might imply an external service called by Edge Functions, or leverage Supabase internal cron jobs for simpler queuing).
 
-Milestone scheduler releases creator payout after verification.
+**8.3. AI/ML & Voice Integration (All orchestrated via Supabase Edge Functions)**
+    - **LLM API Calls:** OpenAI GPT-4 (for outreach drafting, negotiation, recommendations).
+    - **Voice AI:** ElevenLabs (for voice synthesis), Whisper (for speech-to-text).
+    - **Language Translation:** Deepl or Google Translate API.
+    - **Custom Embeddings:** OpenAI/Cohere (for matching creators with briefs).
 
-Ledger per campaign; GST/TDS support for India flagged as later phase.
+**8.4. Third-Party Integrations (All orchestrated via Supabase Edge Functions)**
+    - **Payments:** Razorpay or Stripe (with webhook-based automation).
+    - **Email:** Gmail API or SendGrid (for branded communications).
+    - **Influencer Platform APIs:** YouTube Data API, Instagram Graph API (for performance metrics).
+    - **E-Signature:** DocuSign or native integration using PDF templates and audit trails.
 
-5.5 Performance Dashboard
-Pull post metrics via Instagram Graph and YouTube Data APIs.
+**8.5. DevOps & Deployment**
+    - **Hosting:** Vercel (for frontend) + Supabase (managed platform).
+    - **Monitoring:** Sentry (error tracking for frontend and Edge Functions), PostHog or Mixpanel (user analytics), Supabase built-in logs.
+    - **CI/CD:** GitHub Actions (for frontend builds/deployments, Supabase schema migrations via Supabase CLI, Edge Function deployments).
+    - **Version Control:** Git (GitHub or GitLab).
 
-KPI cards and line chart update at five-minute intervals.
+9. Evaluation Criteria (As Provided)
+------------------------------------
+- Innovation: 30%
+- Impact: 30%
+- UX: 20%
+- Implementation: 20%
 
-Export PDF or CSV report.
+10. Resources (As Provided)
+---------------------------
+- Inspiration/Competitor Websites: creatorhunter.io, amt.ai
 
-5.6 Admin Console
-CRUD for users and roles.
-
-Data health widgets for missing metrics or failed webhooks.
-
-Suspend or flag accounts.
-
-6. Non-functional Requirements
-Scalability ten thousand active campaigns and one million creator records.
-
-Performance P95 API response below 400 ms.
-
-Security JWT, role-based access, TLS, passwordless login via Supabase Auth.
-
-Compliance GDPR, Indian IT Rules, PCI through Stripe, KYC on payouts.
-
-Localization eight UI languages and prompt templates.
-
-Accessibility WCAG 2.1 AA, keyboard complete.
-
-7. Information Architecture
-Zone	Primary screens
-Public	Home, Features, Pricing, Docs, Sign in
-Auth App	Campaigns, Discovery, Inbox, Contracts, Payments, Performance, Settings
-Creator Portal	Offers, Chat, Contracts, Payouts, Profile
-Admin Console	Dashboard, Users, Creator Vetting, Campaign Audit
-
-URLs follow pattern /app/<section> and /creator/<section> with numeric IDs for details.
-
-8. Design System (dark theme)
-Colors bg #0D0E12, surface #1A1C22, hover #23262D, primary blue #3B82F6, teal success #14B8A6, red #EF4444, yellow #FACC15, gradient blue→teal.
-
-Typography Inter Display 32, Heading 24, Subheading 20, Body 16, Caption 14, Label 12 CAPS.
-
-Spacing 4 8 12 16 24 32.
-
-Surfaces radius 8, card shadow 0 1 2 rgba(0,0,0,.12), dialog shadow 0 4 8 rgba(0,0,0,.16).
-
-Components Button, Input, Table, Card, Tag chip, Stepper wizard, Toast, Drawer.
-
-Layouts 12-col grid, 72 px left rail, breadcrumb top bar, right detail drawer, bottom tab bar on mobile.
-
-9. Data Model (tables)
-users (id, role, locale, brand_id?, creator_id?)
-
-brands (id, name, billing_id)
-
-creators (id, social_ids, stats_json, languages, payout_method)
-
-campaigns (id, brand_id, brief, budget, status)
-
-campaign_creators (id, campaign_id, creator_id, quote, status)
-
-contracts (id, campaign_creator_id, pdf_url, e_sig_state)
-
-invoices (id, campaign_id, amount, currency, paid_at)
-
-payouts (id, creator_id, campaign_id, milestone, released_at)
-
-posts (id, campaign_creator_id, platform, url, metrics_json)
-
-messages (id, campaign_creator_id, sender_id, body, voice_url)
-
-10. Tech Stack Overview
-Layer	Choice
-Frontend	Next.js 14, React Query, ShadCN + Tailwind
-Auth	Supabase Auth (email + Google)
-Backend	FastAPI, async routers
-Database	Supabase Postgres with row level security
-Search	Pinecone for vector index
-Cache & Jobs	Redis queues
-Storage	Supabase Storage for PDFs and media
-AI/ML	OpenAI GPT-4o, ElevenLabs voice, Whisper STT
-Payments	Stripe global, Razorpay India
-Hosting	Vercel (FE) + AWS EKS (BE)
-Monitoring	Sentry, PostHog
-
-11. Release Plan
-Phase	Weeks	Output
-0 Prep	1	Final PRD, design tokens, low-fi wireframes
-1 Front-end	2-4	Lovable-generated UI, responsive pages, component kit
-2 Schema & Auth	5-6	Supabase tables, RLS, Google login
-3 Core Logic	7-9	Discovery search pipeline, Inbox chat, contract PDF
-4 Payments & Tracker	10-11	Stripe/Razorpay sandbox, IG/YT puller, dashboard
-5 QA & Demo	12	Live demo link, 2-min video, MIT repo push
-
-12. Acceptance Criteria
-A user completes a full campaign loop in demo with mock data.
-
-Creator can accept and sign contract through portal.
-
-Invoice shows as paid in test mode, payout released.
-
-Dashboard displays live metrics within ten minutes of simulated post.
-
-All screens pass axe accessibility audit.
-
-13. Risks and Mitigations
-Risk	Impact	Mitigation
-API quotas	Missing metrics	Cache, staggered fetch jobs
-GPT translation errors	Tone mismatch	Human editable templates
-Payment compliance	Launch delay	Start with INR and USD only
-Data privacy	Legal penalties	Privacy by design, user consents
-
-14. Out of Scope for MVP
-TikTok integration, automated fraud detection, payroll taxes for every market.
+11. Submission Requirements (As Provided)
+---------------------------------------
+- Push MIT-licensed code to a public GitHub repo.
+- Upload 2-min demo video.
+- Provide live demo URL. 

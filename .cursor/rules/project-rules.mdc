@@ -4,160 +4,51 @@ globs:
 alwaysApply: false
 ---
 Project Overview
-This is a React-based influencer marketing platform built with TypeScript, Vite, Tailwind CSS, and Supabase. It manages campaigns, creators, brands, and their interactions through a role-based system.
+This document outlines the rules and guidelines for the InfluencerFlow AI Platform.
+The platform is built with a Vite-based frontend (React/TypeScript) and a Supabase-only backend.
+Supabase will provide:
+- PostgreSQL Database
+- Authentication (Supabase Auth)
+- File Storage (Supabase Storage)
+- All server-side logic, API integrations (AI, payments, social media, e-signature), and custom API endpoints via Supabase Edge Functions (TypeScript/Deno).
 
 Architecture & Tech Stack
 Frontend Stack
-React 18 with TypeScript for type safety
-Vite as build tool and dev server
-Tailwind CSS for styling with custom design tokens
-Shadcn/UI component library for consistent UI elements
-React Router DOM for client-side routing
-TanStack React Query for data fetching and caching
-Lucide React for icons
-Backend Integration
-Supabase for authentication, database, and real-time features
-Row Level Security (RLS) policies for data access control
-Database functions for complex business logic
-Database Schema
-Core Tables
-users - User profiles with roles (brand, agency, creator, admin)
-brands - Brand information linked to user owners
-creators - Creator profiles with social media IDs and stats
-campaigns - Marketing campaigns with budgets and timelines
-campaign_creators - Junction table linking campaigns to creators
-messages - Communication between brands and creators
-contracts - Legal agreements for campaigns
-invoices - Billing information
-payouts - Creator payments
-posts - Social media posts with metrics
-audit_log - System activity tracking
-Key Relationships
-Users can be brands, agencies, creators, or admins
-Brands own campaigns
-Campaigns can have multiple creators
-Messages are tied to campaign-creator relationships
-Posts track performance metrics for campaigns
-Authentication System
-AuthContext Implementation
-Manages user session and role state
-Handles Google OAuth and email/password authentication
-Automatically creates user profiles for new Google sign-ins
-Uses Supabase auth state changes for real-time session updates
-Implements proper session persistence and token refresh
-Protected Routes
-ProtectedRoute component wraps authenticated areas
-Redirects unauthenticated users to /auth
-Shows loading state during authentication checks
-Auth Flow
-Users can sign up/in via Google OAuth or email/password
-New users get default 'brand' role
-Role determines UI access and data visibility
-Session persists across browser refreshes
-UI Architecture
-Layout System
-Layout component provides consistent navigation and header
-Responsive design with mobile-friendly navigation
-Role-based UI showing different options per user type
-Breadcrumb navigation for better UX
-Navigation Structure
-Desktop: Fixed sidebar with icon + text navigation
-Mobile: Hamburger menu + bottom tab navigation
-Pages: Campaigns, Discovery, Inbox, Performance, Contracts, Payments, Settings
-Design System
-Custom CSS variables for colors, spacing, and typography
-Consistent component patterns using Shadcn/UI
-Responsive breakpoints for mobile/desktop
-Focus and accessibility considerations
-Data Management
-React Query Integration
-Custom hooks for data fetching (useCampaigns, useBrands)
-Automatic caching and background refetching
-Optimistic updates for better UX
-Error handling and loading states
-Data Fetching Patterns
+- Vite as build tool and dev server (React with TypeScript)
+- Tailwind CSS for styling with custom design tokens
+- Shadcn/UI component library for consistent UI elements (or similar)
+- TanStack React Query (or similar) for data fetching and caching against Supabase
+- `supabase-js` client library for frontend-to-Supabase interaction
 
-// Example hook structure
-export const useCampaigns = () => {
-  return useQuery({
-    queryKey: ['campaigns'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('campaigns')
-        .select('*, brand:brands(name)')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
-    }
-  });
-};
-Key Features
-Role-Based Access
-Brand: Create campaigns, manage budgets, communicate with creators
-Agency: Manage multiple brands and campaigns
-Creator: Respond to campaigns, upload content, track payments
-Admin: Full system access and user management
-Campaign Management
-Create and edit campaigns with budgets and timelines
-Invite creators to participate
-Track campaign performance and metrics
-Handle contracts and payments
-Communication System
-Real-time messaging between brands and creators
-Campaign-specific conversation threads
-Support for text and voice messages
-Security Implementation
-Row Level Security (RLS)
-All tables have RLS policies
-Users can only access their own data
-Role-based access controls
-Secure database functions with SECURITY DEFINER
-Authentication Security
-Proper session management with refresh tokens
-CSRF protection through Supabase
-Secure OAuth implementation
-Email verification optional (can be disabled for development)
+Supabase Backend Stack (Supabase-Only)
+- **Database**: Supabase PostgreSQL for all structured data (users, creators, campaigns, contracts, messages, etc.).
+- **Authentication**: Supabase Auth for user management, roles (brand, agency, creator, admin), Google OAuth, email/password.
+- **Storage**: Supabase Storage for user-uploaded files, generated PDFs (contracts), voice messages.
+- **Server-Side Logic & APIs**: Supabase Edge Functions (written in TypeScript/Deno) will be responsible for:
+    - All business logic that cannot or should not run on the client.
+    - Securely calling external AI APIs (OpenAI GPT-4, ElevenLabs, Whisper, Translation services).
+    - Securely integrating with third-party services (Payment gateways like Stripe/Razorpay, Email services like SendGrid, Social Media APIs, E-signature services).
+    - Creating any custom API endpoints needed by the frontend beyond direct database access via `supabase-js` (though direct access with RLS is preferred where possible).
+    - Handling webhooks from third-party services.
+- **Real-time Features**: Supabase Realtime for features like live chat or notifications.
+- **Security**: Row Level Security (RLS) on all PostgreSQL tables, secure management of API keys and secrets within Supabase Edge Function environment variables.
+
+Key Features (as per PRD, implemented via Supabase)
+- Creator Discovery Engine (Supabase DB for storage, Edge Functions for AI search logic if needed)
+- AI Outreach & Negotiation System (Edge Functions orchestrating LLM, Voice, Translation, Email APIs)
+- Contract Automation (Edge Functions for PDF generation & e-signature integration)
+- Payments Module (Edge Functions for payment gateway integration)
+- Campaign Tracker & Performance Dashboard (Edge Functions for social API data pulls, Supabase DB for storage)
+- Admin Panel (Direct Supabase DB access with RLS, or admin-specific Edge Functions)
+
 Development Guidelines
-File Organization
-Components: Reusable UI components in /components
-Pages: Route-specific components in /pages
-Hooks: Custom React hooks in /hooks
-Contexts: Global state management in /contexts
-Types: TypeScript definitions auto-generated from Supabase
-Code Patterns
-Functional components with hooks
-TypeScript for all components and functions
-Custom hooks for data fetching
-Error boundaries and loading states
-Consistent naming conventions
-Performance Considerations
-Code splitting at route level
-Optimized re-renders with proper dependency arrays
-Cached API responses with React Query
-Lazy loading for heavy components
-Configuration Files
-Key Configuration
-Supabase client configured in /integrations/supabase/
-Tailwind config with custom design tokens
-TypeScript strict mode enabled
-Vite config for development and build
-Environment Setup
-Supabase URL and anon key in client configuration
-No environment variables needed (uses Supabase integration)
-Development server on port configured by Vite
-Deployment & Production
-Build Process
-Vite handles bundling and optimization
-TypeScript compilation with strict checking
-CSS processing through Tailwind
-Asset optimization and code splitting
-Supabase Integration
-Database migrations handled through Supabase CLI
-RLS policies deployed automatically
-Edge functions for custom backend logic
-Real-time subscriptions for live updates
-This architecture provides a scalable, secure, and maintainable foundation for an influencer marketing platform with clear separation of concerns and robust data management.
+- Prioritize direct Supabase client (`supabase-js`) interaction from the frontend for CRUD operations where RLS is sufficient.
+- Use Supabase Edge Functions for:
+    - Operations requiring elevated privileges or secret management.
+    - Complex business logic involving multiple steps or data sources.
+    - Orchestrating calls to external AI and third-party APIs.
+- Ensure all Edge Functions are secure, efficient, and handle errors gracefully.
+- Follow guidelines for writing Supabase Edge Functions, RLS policies, and database functions as per other relevant `.mdc` files ([`writing-supabase-edge-functions.mdc`](mdc:.cursor/rules/writing-supabase-edge-functions.mdc), [`create-rls-policies.mdc`](mdc:.cursor/rules/create-rls-policies.mdc), etc.).
 
 # Added by Task Master - Development Workflow Rules
 
@@ -169,73 +60,58 @@ Below you will find a variety of important rules spanning:
 ---
 DEV_WORKFLOW
 ---
-description: Guide for using meta-development script (scripts/dev.js) to manage task-driven development workflows
+description: Guide for using Task Master to manage task-driven development workflows.
 globs: **/*
 filesToApplyRule: **/*
 alwaysApply: true
 ---
 
-- **Global CLI Commands**
-  - Task Master now provides a global CLI through the `task-master` command
-  - All functionality from `scripts/dev.js` is available through this interface
-  - Install globally with `npm install -g claude-task-master` or use locally via `npx`
-  - Use `task-master <command>` instead of `node scripts/dev.js <command>`
-  - Examples:
-    - `task-master list` instead of `node scripts/dev.js list`
-    - `task-master next` instead of `node scripts/dev.js next`
-    - `task-master expand --id=3` instead of `node scripts/dev.js expand --id=3`
-  - All commands accept the same options as their script equivalents
-  - The CLI provides additional commands like `task-master init` for project setup
+- **Interaction Methods:**
+  - **MCP Tools (Recommended for Integrated Environments like Cursor):** Use the Task Master tools available in your MCP server (e.g., `mcp_taskmaster-ai_parse_prd`, `mcp_taskmaster-ai_get_tasks`). This offers structured data and better integration. Refer to `taskmaster.mdc` (or the tool documentation provided by your MCP server) for a full list of MCP tools and their CLI equivalents.
+  - **`task-master` CLI (For Users & Fallback):** Use the global `task-master` command for direct terminal interaction. Install with `npm install -g task-master-ai` or use locally via `npx task-master-ai ...`.
 
 - **Development Workflow Process**
-  - Start new projects by running `task-master init` or `node scripts/dev.js parse-prd --input=<prd-file.txt>` to generate initial tasks.json
-  - Begin coding sessions with `task-master list` to see current tasks, status, and IDs
-  - Analyze task complexity with `task-master analyze-complexity --research` before breaking down tasks
-  - Select tasks based on dependencies (all marked 'done'), priority level, and ID order
-  - Clarify tasks by checking task files in tasks/ directory or asking for user input
-  - View specific task details using `task-master show <id>` to understand implementation requirements
-  - Break down complex tasks using `task-master expand --id=<id>` with appropriate flags
-  - Clear existing subtasks if needed using `task-master clear-subtasks --id=<id>` before regenerating
-  - Implement code following task details, dependencies, and project standards
-  - Verify tasks according to test strategies before marking as complete
-  - Mark completed tasks with `task-master set-status --id=<id> --status=done`
-  - Update dependent tasks when implementation differs from original plan
-  - Generate task files with `task-master generate` after updating tasks.json
-  - Maintain valid dependency structure with `task-master fix-dependencies` when needed
-  - Respect dependency chains and task priorities when selecting work
-  - Report progress regularly using the list command
+  - Start new projects by running the `mcp_taskmaster-ai_initialize_project` MCP tool (or `task-master init` CLI command) and then `mcp_taskmaster-ai_parse_prd` (or `task-master parse-prd --input=<prd-file.txt>`) to generate initial `tasks.json`.
+  - Begin coding sessions with `mcp_taskmaster-ai_get_tasks` (or `task-master list`) to see current tasks, status, and IDs.
+  - Analyze task complexity with `mcp_taskmaster-ai_analyze_project_complexity --research` (or `task-master analyze-complexity --research`) before breaking down tasks.
+  - Review the complexity report using `mcp_taskmaster-ai_complexity_report` (or `task-master complexity-report`).
+  - Select tasks based on dependencies (all marked 'done'), priority level, and ID order.
+  - Clarify tasks by checking task files in `tasks/` directory or asking for user input.
+  - View specific task details using `mcp_taskmaster-ai_get_task --id=<id>` (or `task-master show <id>`) to understand implementation requirements.
+  - Break down complex tasks using `mcp_taskmaster-ai_expand_task --id=<id>` (or `task-master expand --id=<id>`) with appropriate flags like `--force` and `--research`.
+  - Clear existing subtasks if needed using `mcp_taskmaster-ai_clear_subtasks --id=<id>` (or `task-master clear-subtasks --id=<id>`) before regenerating.
+  - Implement code following task details, dependencies, and project standards.
+  - Verify tasks according to test strategies before marking as complete.
+  - Mark completed tasks with `mcp_taskmaster-ai_set_task_status --id=<id> --status=done` (or `task-master set-status --id=<id> --status=done`).
+  - Update dependent tasks when implementation differs using `mcp_taskmaster-ai_update --from=<id> --prompt="..."` (or `task-master update --from=<id> --prompt="..."`) or `mcp_taskmaster-ai_update_task --id=<id> --prompt="..."` (or `task-master update-task --id=<id> --prompt="..."`).
+  - Add new tasks using `mcp_taskmaster-ai_add_task --prompt="..." --research` (or `task-master add-task --prompt="..." --research`).
+  - Generate task files with `mcp_taskmaster-ai_generate` (or `task-master generate`) after updating `tasks.json`.
+  - Maintain valid dependency structure with `mcp_taskmaster-ai_fix_dependencies` (or `task-master fix-dependencies`) when needed.
+  - Respect dependency chains and task priorities when selecting work.
+  - Report progress regularly using `mcp_taskmaster-ai_get_tasks` (or `task-master list`).
 
 - **Task Complexity Analysis**
-  - Run `node scripts/dev.js analyze-complexity --research` for comprehensive analysis
-  - Review complexity report in scripts/task-complexity-report.json
-  - Or use `node scripts/dev.js complexity-report` for a formatted, readable version of the report
-  - Focus on tasks with highest complexity scores (8-10) for detailed breakdown
-  - Use analysis results to determine appropriate subtask allocation
-  - Note that reports are automatically used by the expand command
+  - Run `mcp_taskmaster-ai_analyze_project_complexity --research` (or `task-master analyze-complexity --research`) for comprehensive analysis.
+  - Review complexity report using `mcp_taskmaster-ai_complexity_report` (or `task-master complexity-report`).
+  - Focus on tasks with highest complexity scores (8-10) for detailed breakdown.
+  - Note that reports are automatically used by the expand task tools/commands.
 
 - **Task Breakdown Process**
-  - For tasks with complexity analysis, use `node scripts/dev.js expand --id=<id>`
-  - Otherwise use `node scripts/dev.js expand --id=<id> --subtasks=<number>`
-  - Add `--research` flag to leverage Perplexity AI for research-backed expansion
-  - Use `--prompt="<context>"` to provide additional context when needed
-  - Review and adjust generated subtasks as necessary
-  - Use `--all` flag to expand multiple pending tasks at once
-  - If subtasks need regeneration, clear them first with `clear-subtasks` command
+  - Use `mcp_taskmaster-ai_expand_task --id=<id>` (or `task-master expand --id=<id>`).
+  - Add `--research` flag to leverage AI for research-backed expansion.
+  - Use `--prompt="<context>"` to provide additional context when needed.
+  - Review and adjust generated subtasks as necessary.
+  - Use `mcp_taskmaster-ai_expand_all` (or `task-master expand --all`) to expand multiple pending tasks.
+  - If subtasks need regeneration, clear them first with `mcp_taskmaster-ai_clear_subtasks --id=<id>` (or `task-master clear-subtasks --id=<id>`).
 
 - **Implementation Drift Handling**
-  - When implementation differs significantly from planned approach
-  - When future tasks need modification due to current implementation choices
-  - When new dependencies or requirements emerge
-  - Call `node scripts/dev.js update --from=<futureTaskId> --prompt="<explanation>"` to update tasks.json
+  - When implementation differs significantly, use `mcp_taskmaster-ai_update --from=<futureTaskId> --prompt="<explanation>"` (or `task-master update --from=<id> --prompt="<explanation>"`) or `mcp_taskmaster-ai_update_task --id=<taskId> --prompt="<explanation>"` (or `task-master update-task --id=<id> --prompt="<explanation>"`).
 
-- **Task Status Management**
-  - Use 'pending' for tasks ready to be worked on
-  - Use 'done' for completed and verified tasks
-  - Use 'deferred' for postponed tasks
-  - Add custom status values as needed for project-specific workflows
+- **Task Status Management** (Refer to `taskmaster.mdc` or MCP tool documentation for full list of statuses)
+  - Use 'pending', 'done', 'in-progress', 'review', 'deferred', 'cancelled'.
 
-- **Task File Format Reference**
-  ```
+- **Task File Format Reference** (Individual Markdown files in `tasks/` - generated by `mcp_taskmaster-ai_generate` or `task-master generate`)
+  ```markdown
   # Task ID: <id>
   # Title: <title>
   # Status: <status>
@@ -249,259 +125,31 @@ alwaysApply: true
   <verification approach>
   ```
 
-- **Command Reference: parse-prd**
-  - Legacy Syntax: `node scripts/dev.js parse-prd --input=<prd-file.txt>`
-  - CLI Syntax: `task-master parse-prd --input=<prd-file.txt>`
-  - Description: Parses a PRD document and generates a tasks.json file with structured tasks
-  - Parameters: 
-    - `--input=<file>`: Path to the PRD text file (default: sample-prd.txt)
-  - Example: `task-master parse-prd --input=requirements.txt`
-  - Notes: Will overwrite existing tasks.json file. Use with caution.
+- **Command Reference (Examples using `task-master` CLI - refer to MCP tool names for equivalent integrated functionality):**
+  - `task-master parse-prd --input=<prd-file.txt>`
+  - `task-master update --from=<id> --prompt="<prompt>"`
+  - `task-master generate`
+  - `task-master set-status --id=<id> --status=<status>`
+  - `task-master list`
+  - `task-master expand --id=<id> [--num=<number>] [--research] [--prompt="<context>"]`
+  - `task-master analyze-complexity --research`
+  - `task-master clear-subtasks --id=<id>`
+  - `task-master add-task --prompt="..."`
+  - `task-master init`
 
-- **Command Reference: update**
-  - Legacy Syntax: `node scripts/dev.js update --from=<id> --prompt="<prompt>"`
-  - CLI Syntax: `task-master update --from=<id> --prompt="<prompt>"`
-  - Description: Updates tasks with ID >= specified ID based on the provided prompt
-  - Parameters:
-    - `--from=<id>`: Task ID from which to start updating (required)
-    - `--prompt="<text>"`: Explanation of changes or new context (required)
-  - Example: `task-master update --from=4 --prompt="Now we are using Express instead of Fastify."`
-  - Notes: Only updates tasks not marked as 'done'. Completed tasks remain unchanged.
-
-- **Command Reference: generate**
-  - Legacy Syntax: `node scripts/dev.js generate`
-  - CLI Syntax: `task-master generate`
-  - Description: Generates individual task files in tasks/ directory based on tasks.json
-  - Parameters: 
-    - `--file=<path>, -f`: Use alternative tasks.json file (default: 'tasks/tasks.json')
-    - `--output=<dir>, -o`: Output directory (default: 'tasks')
-  - Example: `task-master generate`
-  - Notes: Overwrites existing task files. Creates tasks/ directory if needed.
-
-- **Command Reference: set-status**
-  - Legacy Syntax: `node scripts/dev.js set-status --id=<id> --status=<status>`
-  - CLI Syntax: `task-master set-status --id=<id> --status=<status>`
-  - Description: Updates the status of a specific task in tasks.json
-  - Parameters:
-    - `--id=<id>`: ID of the task to update (required)
-    - `--status=<status>`: New status value (required)
-  - Example: `task-master set-status --id=3 --status=done`
-  - Notes: Common values are 'done', 'pending', and 'deferred', but any string is accepted.
-
-- **Command Reference: list**
-  - Legacy Syntax: `node scripts/dev.js list`
-  - CLI Syntax: `task-master list`
-  - Description: Lists all tasks in tasks.json with IDs, titles, and status
-  - Parameters: 
-    - `--status=<status>, -s`: Filter by status
-    - `--with-subtasks`: Show subtasks for each task
-    - `--file=<path>, -f`: Use alternative tasks.json file (default: 'tasks/tasks.json')
-  - Example: `task-master list`
-  - Notes: Provides quick overview of project progress. Use at start of sessions.
-
-- **Command Reference: expand**
-  - Legacy Syntax: `node scripts/dev.js expand --id=<id> [--num=<number>] [--research] [--prompt="<context>"]`
-  - CLI Syntax: `task-master expand --id=<id> [--num=<number>] [--research] [--prompt="<context>"]`
-  - Description: Expands a task with subtasks for detailed implementation
-  - Parameters:
-    - `--id=<id>`: ID of task to expand (required unless using --all)
-    - `--all`: Expand all pending tasks, prioritized by complexity
-    - `--num=<number>`: Number of subtasks to generate (default: from complexity report)
-    - `--research`: Use Perplexity AI for research-backed generation
-    - `--prompt="<text>"`: Additional context for subtask generation
-    - `--force`: Regenerate subtasks even for tasks that already have them
-  - Example: `task-master expand --id=3 --num=5 --research --prompt="Focus on security aspects"`
-  - Notes: Uses complexity report recommendations if available.
-
-- **Command Reference: analyze-complexity**
-  - Legacy Syntax: `node scripts/dev.js analyze-complexity [options]`
-  - CLI Syntax: `task-master analyze-complexity [options]`
-  - Description: Analyzes task complexity and generates expansion recommendations
-  - Parameters:
-    - `--output=<file>, -o`: Output file path (default: scripts/task-complexity-report.json)
-    - `--model=<model>, -m`: Override LLM model to use
-    - `--threshold=<number>, -t`: Minimum score for expansion recommendation (default: 5)
-    - `--file=<path>, -f`: Use alternative tasks.json file
-    - `--research, -r`: Use Perplexity AI for research-backed analysis
-  - Example: `task-master analyze-complexity --research`
-  - Notes: Report includes complexity scores, recommended subtasks, and tailored prompts.
-
-- **Command Reference: clear-subtasks**
-  - Legacy Syntax: `node scripts/dev.js clear-subtasks --id=<id>`
-  - CLI Syntax: `task-master clear-subtasks --id=<id>`
-  - Description: Removes subtasks from specified tasks to allow regeneration
-  - Parameters:
-    - `--id=<id>`: ID or comma-separated IDs of tasks to clear subtasks from
-    - `--all`: Clear subtasks from all tasks
-  - Examples:
-    - `task-master clear-subtasks --id=3`
-    - `task-master clear-subtasks --id=1,2,3`
-    - `task-master clear-subtasks --all`
-  - Notes: 
-    - Task files are automatically regenerated after clearing subtasks
-    - Can be combined with expand command to immediately generate new subtasks
-    - Works with both parent tasks and individual subtasks
-
-- **Task Structure Fields**
-  - **id**: Unique identifier for the task (Example: `1`)
-  - **title**: Brief, descriptive title (Example: `"Initialize Repo"`)
-  - **description**: Concise summary of what the task involves (Example: `"Create a new repository, set up initial structure."`)
-  - **status**: Current state of the task (Example: `"pending"`, `"done"`, `"deferred"`)
-  - **dependencies**: IDs of prerequisite tasks (Example: `[1, 2]`)
-    - Dependencies are displayed with status indicators (✅ for completed, ⏱️ for pending)
-    - This helps quickly identify which prerequisite tasks are blocking work
-  - **priority**: Importance level (Example: `"high"`, `"medium"`, `"low"`)
-  - **details**: In-depth implementation instructions (Example: `"Use GitHub client ID/secret, handle callback, set session token."`)
-  - **testStrategy**: Verification approach (Example: `"Deploy and call endpoint to confirm 'Hello World' response."`)
-  - **subtasks**: List of smaller, more specific tasks (Example: `[{"id": 1, "title": "Configure OAuth", ...}]`)
-
-- **Environment Variables Configuration**
-  - **ANTHROPIC_API_KEY** (Required): Your Anthropic API key for Claude (Example: `ANTHROPIC_API_KEY=sk-ant-api03-...`)
-  - **MODEL** (Default: `"claude-3-7-sonnet-20250219"`): Claude model to use (Example: `MODEL=claude-3-opus-20240229`)
-  - **MAX_TOKENS** (Default: `"4000"`): Maximum tokens for responses (Example: `MAX_TOKENS=8000`)
-  - **TEMPERATURE** (Default: `"0.7"`): Temperature for model responses (Example: `TEMPERATURE=0.5`)
-  - **DEBUG** (Default: `"false"`): Enable debug logging (Example: `DEBUG=true`)
-  - **TASKMASTER_LOG_LEVEL** (Default: `"info"`): Console output level (Example: `TASKMASTER_LOG_LEVEL=debug`)
-  - **DEFAULT_SUBTASKS** (Default: `"3"`): Default subtask count (Example: `DEFAULT_SUBTASKS=5`)
-  - **DEFAULT_PRIORITY** (Default: `"medium"`): Default priority (Example: `DEFAULT_PRIORITY=high`)
-  - **PROJECT_NAME** (Default: `"MCP SaaS MVP"`): Project name in metadata (Example: `PROJECT_NAME=My Awesome Project`)
-  - **PROJECT_VERSION** (Default: `"1.0.0"`): Version in metadata (Example: `PROJECT_VERSION=2.1.0`)
-  - **PERPLEXITY_API_KEY**: For research-backed features (Example: `PERPLEXITY_API_KEY=pplx-...`)
-  - **PERPLEXITY_MODEL** (Default: `"sonar-medium-online"`): Perplexity model (Example: `PERPLEXITY_MODEL=sonar-large-online`)
+- **Environment Variables & Configuration**
+  - Refer to `.taskmasterconfig` for model and global settings.
+  - API keys for AI providers (OpenAI, ElevenLabs, etc.) and third-party services (Stripe, SendGrid, etc.) should be stored as **secrets in the Supabase project settings** and accessed by Edge Functions as environment variables. Do NOT commit them to the repository or `.taskmasterconfig`.
 
 - **Determining the Next Task**
-  - Run `task-master next` to show the next task to work on
-  - The next command identifies tasks with all dependencies satisfied
-  - Tasks are prioritized by priority level, dependency count, and ID
-  - The command shows comprehensive task information including:
-    - Basic task details and description
-    - Implementation details
-    - Subtasks (if they exist)
-    - Contextual suggested actions
-  - Recommended before starting any new development work
-  - Respects your project's dependency structure
-  - Ensures tasks are completed in the appropriate sequence
-  - Provides ready-to-use commands for common task actions
+  - Use `mcp_taskmaster-ai_next_task` (or `task-master next`).
 
 - **Viewing Specific Task Details**
-  - Run `task-master show <id>` or `task-master show --id=<id>` to view a specific task
-  - Use dot notation for subtasks: `task-master show 1.2` (shows subtask 2 of task 1)
-  - Displays comprehensive information similar to the next command, but for a specific task
-  - For parent tasks, shows all subtasks and their current status
-  - For subtasks, shows parent task information and relationship
-  - Provides contextual suggested actions appropriate for the specific task
-  - Useful for examining task details before implementation or checking status
+  - Use `mcp_taskmaster-ai_get_task --id=<id>` (or `task-master show <id>`).
 
 - **Managing Task Dependencies**
-  - Use `task-master add-dependency --id=<id> --depends-on=<id>` to add a dependency
-  - Use `task-master remove-dependency --id=<id> --depends-on=<id>` to remove a dependency
-  - The system prevents circular dependencies and duplicate dependency entries
-  - Dependencies are checked for existence before being added or removed
-  - Task files are automatically regenerated after dependency changes
-  - Dependencies are visualized with status indicators in task listings and files
-
-- **Command Reference: add-dependency**
-  - Legacy Syntax: `node scripts/dev.js add-dependency --id=<id> --depends-on=<id>`
-  - CLI Syntax: `task-master add-dependency --id=<id> --depends-on=<id>`
-  - Description: Adds a dependency relationship between two tasks
-  - Parameters:
-    - `--id=<id>`: ID of task that will depend on another task (required)
-    - `--depends-on=<id>`: ID of task that will become a dependency (required)
-  - Example: `task-master add-dependency --id=22 --depends-on=21`
-  - Notes: Prevents circular dependencies and duplicates; updates task files automatically
-
-- **Command Reference: remove-dependency**
-  - Legacy Syntax: `node scripts/dev.js remove-dependency --id=<id> --depends-on=<id>`
-  - CLI Syntax: `task-master remove-dependency --id=<id> --depends-on=<id>`
-  - Description: Removes a dependency relationship between two tasks
-  - Parameters:
-    - `--id=<id>`: ID of task to remove dependency from (required)
-    - `--depends-on=<id>`: ID of task to remove as a dependency (required)
-  - Example: `task-master remove-dependency --id=22 --depends-on=21`
-  - Notes: Checks if dependency actually exists; updates task files automatically
-
-- **Command Reference: validate-dependencies**
-  - Legacy Syntax: `node scripts/dev.js validate-dependencies [options]`
-  - CLI Syntax: `task-master validate-dependencies [options]`
-  - Description: Checks for and identifies invalid dependencies in tasks.json and task files
-  - Parameters:
-    - `--file=<path>, -f`: Use alternative tasks.json file (default: 'tasks/tasks.json')
-  - Example: `task-master validate-dependencies`
-  - Notes: 
-    - Reports all non-existent dependencies and self-dependencies without modifying files
-    - Provides detailed statistics on task dependency state
-    - Use before fix-dependencies to audit your task structure
-
-- **Command Reference: fix-dependencies**
-  - Legacy Syntax: `node scripts/dev.js fix-dependencies [options]`
-  - CLI Syntax: `task-master fix-dependencies [options]`
-  - Description: Finds and fixes all invalid dependencies in tasks.json and task files
-  - Parameters:
-    - `--file=<path>, -f`: Use alternative tasks.json file (default: 'tasks/tasks.json')
-  - Example: `task-master fix-dependencies`
-  - Notes: 
-    - Removes references to non-existent tasks and subtasks
-    - Eliminates self-dependencies (tasks depending on themselves)
-    - Regenerates task files with corrected dependencies
-    - Provides detailed report of all fixes made
-
-- **Command Reference: complexity-report**
-  - Legacy Syntax: `node scripts/dev.js complexity-report [options]`
-  - CLI Syntax: `task-master complexity-report [options]`
-  - Description: Displays the task complexity analysis report in a formatted, easy-to-read way
-  - Parameters:
-    - `--file=<path>, -f`: Path to the complexity report file (default: 'scripts/task-complexity-report.json')
-  - Example: `task-master complexity-report`
-  - Notes: 
-    - Shows tasks organized by complexity score with recommended actions
-    - Provides complexity distribution statistics
-    - Displays ready-to-use expansion commands for complex tasks
-    - If no report exists, offers to generate one interactively
-
-- **Command Reference: add-task**
-  - CLI Syntax: `task-master add-task [options]`
-  - Description: Add a new task to tasks.json using AI
-  - Parameters:
-    - `--file=<path>, -f`: Path to the tasks file (default: 'tasks/tasks.json')
-    - `--prompt=<text>, -p`: Description of the task to add (required)
-    - `--dependencies=<ids>, -d`: Comma-separated list of task IDs this task depends on
-    - `--priority=<priority>`: Task priority (high, medium, low) (default: 'medium')
-  - Example: `task-master add-task --prompt="Create user authentication using Auth0"`
-  - Notes: Uses AI to convert description into structured task with appropriate details
-
-- **Command Reference: init**
-  - CLI Syntax: `task-master init`
-  - Description: Initialize a new project with Task Master structure
-  - Parameters: None
-  - Example: `task-master init`
-  - Notes: 
-    - Creates initial project structure with required files
-    - Prompts for project settings if not provided
-    - Merges with existing files when appropriate
-    - Can be used to bootstrap a new Task Master project quickly
-
-- **Code Analysis & Refactoring Techniques**
-  - **Top-Level Function Search**
-    - Use grep pattern matching to find all exported functions across the codebase
-    - Command: `grep -E "export (function|const) \w+|function \w+\(|const \w+ = \(|module\.exports" --include="*.js" -r ./`
-    - Benefits:
-      - Quickly identify all public API functions without reading implementation details
-      - Compare functions between files during refactoring (e.g., monolithic to modular structure)
-      - Verify all expected functions exist in refactored modules
-      - Identify duplicate functionality or naming conflicts
-    - Usage examples:
-      - When migrating from `scripts/dev.js` to modular structure: `grep -E "function \w+\(" scripts/dev.js`
-      - Check function exports in a directory: `grep -E "export (function|const)" scripts/modules/`
-      - Find potential naming conflicts: `grep -E "function (get|set|create|update)\w+\(" -r ./`
-    - Variations:
-      - Add `-n` flag to include line numbers
-      - Add `--include="*.ts"` to filter by file extension
-      - Use with `| sort` to alphabetize results
-    - Integration with refactoring workflow:
-      - Start by mapping all functions in the source file
-      - Create target module files based on function grouping
-      - Verify all functions were properly migrated
-      - Check for any unintentional duplications or omissions
+  - Use `mcp_taskmaster-ai_add_dependency` / `remove_dependency` (or `task-master add-dependency` / `remove-dependency`).
+  - Validate with `mcp_taskmaster-ai_validate_dependencies` (or `task-master validate-dependencies`) and fix with `mcp_taskmaster-ai_fix_dependencies` (or `task-master fix-dependencies`).
 
 ---
 WINDSURF_RULES
