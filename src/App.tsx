@@ -9,6 +9,9 @@ import Performance from "./pages/Performance";
 import NotFound from "./pages/NotFound";
 import Discovery from "./pages/Discovery";
 import Inbox from "./pages/Inbox";
+import Contracts from "./pages/Contracts";
+import Payments from "./pages/Payments";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -18,19 +21,21 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Campaigns />} />
-            <Route path="discovery" element={<Discovery />} />
-            <Route path="inbox" element={<Inbox />} />
-            <Route path="performance" element={<Performance />} />
-            {/* Placeholder routes for disabled nav items */}
-            <Route path="contracts" element={<div className="text-center py-12 text-secondary">Contracts page coming soon</div>} />
-            <Route path="payments" element={<div className="text-center py-12 text-secondary">Payments page coming soon</div>} />
-            <Route path="settings" element={<div className="text-center py-12 text-secondary">Settings page coming soon</div>} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <div className="App">
+          <a href="#main-content" className="skip-nav">Skip to main content</a>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Campaigns />} />
+              <Route path="discovery" element={<Discovery />} />
+              <Route path="inbox" element={<Inbox />} />
+              <Route path="performance" element={<Performance />} />
+              <Route path="contracts" element={<Contracts />} />
+              <Route path="payments" element={<Payments />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

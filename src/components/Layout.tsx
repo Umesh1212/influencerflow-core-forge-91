@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { Menu, X, BarChart3, Search, MessageSquare, FileText, CreditCard, TrendingUp, Settings, Plus } from 'lucide-react';
@@ -8,10 +7,10 @@ const navigationItems = [
   { name: 'Campaigns', path: '/', icon: BarChart3, isDefault: true },
   { name: 'Discovery', path: '/discovery', icon: Search },
   { name: 'Inbox', path: '/inbox', icon: MessageSquare },
-  { name: 'Contracts', path: '/contracts', icon: FileText, disabled: true },
-  { name: 'Payments', path: '/payments', icon: CreditCard, disabled: true },
+  { name: 'Contracts', path: '/contracts', icon: FileText },
+  { name: 'Payments', path: '/payments', icon: CreditCard },
   { name: 'Performance', path: '/performance', icon: TrendingUp },
-  { name: 'Settings', path: '/settings', icon: Settings, disabled: true },
+  { name: 'Settings', path: '/settings', icon: Settings },
 ];
 
 const Layout = () => {

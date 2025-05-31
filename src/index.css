@@ -59,6 +59,39 @@
   html {
     color-scheme: dark;
   }
+
+  /* Skip navigation link for screen readers */
+  .skip-nav {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: var(--primary-500);
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    border-radius: 4px;
+    z-index: 100;
+  }
+  
+  .skip-nav:focus {
+    top: 6px;
+  }
+
+  /* Focus trap for modal dialogs */
+  .focus-trap {
+    outline: none;
+  }
+
+  /* Respect reduced motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
 @layer components {
@@ -114,6 +147,11 @@
     @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-background;
   }
 
+  /* CTA Hover Pulse */
+  .cta-pulse {
+    @apply transition-opacity duration-200 hover:opacity-90;
+  }
+
   /* Status Chips */
   .status-chip {
     @apply inline-flex items-center px-2 py-1 rounded text-label;
@@ -167,6 +205,33 @@
   .bg-accent-gradient {
     background: linear-gradient(135deg, var(--primary-500) 0%, var(--secondary-500) 100%);
   }
+
+  /* Toast Stacking */
+  .toast-container {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 100;
+    max-height: calc(100vh - 2rem);
+    overflow: hidden;
+  }
+
+  .toast-stack {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+    max-height: calc(3 * 4rem + 2 * 0.5rem); /* Max 3 toasts */
+  }
+
+  /* Responsive Table */
+  @media (max-width: 640px) {
+    .table-responsive {
+      display: block;
+      white-space: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
 }
 
 @layer utilities {
@@ -174,4 +239,80 @@
     min-height: 44px;
     min-width: 44px;
   }
+
+  /* Skeleton Animation */
+  .animate-skeleton-pulse {
+    animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes skeleton-pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  /* Enhanced Animations */
+  .animate-slide-in-right {
+    animation: slide-in-right 0.3s ease-out;
+  }
+
+  .animate-slide-out-right {
+    animation: slide-out-right 0.3s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.2s ease-out;
+  }
+
+  @keyframes slide-in-right {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slide-out-right {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --text-primary: #FFFFFF;
+    --text-secondary: #CCCCCC;
+    --border-subtle: #666666;
+  }
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
