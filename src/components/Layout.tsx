@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { Menu, X, BarChart3, Search, MessageSquare, FileText, CreditCard, TrendingUp, Settings, Plus } from 'lucide-react';
@@ -32,14 +33,9 @@ const Layout = () => {
         className={({ isActive: linkActive }) => `
           flex items-center gap-3 px-3 py-3 rounded-default transition-all duration-200 min-tap focus-ring
           ${linkActive || isActive ? 'bg-primary-500 text-white' : 'text-secondary hover:bg-surface-hover hover:text-primary'}
-          ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}
           ${mobile ? 'text-body' : 'text-caption'}
         `}
-        onClick={(e) => {
-          if (item.disabled) {
-            e.preventDefault();
-            return;
-          }
+        onClick={() => {
           if (mobile) {
             setIsMobileMenuOpen(false);
           }
@@ -148,12 +144,7 @@ const Layout = () => {
                   to={item.path}
                   className={`flex flex-col items-center gap-1 p-2 min-tap focus-ring rounded-default transition-colors ${
                     isActive ? 'text-primary-500' : 'text-secondary'
-                  } ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  onClick={(e) => {
-                    if (item.disabled) {
-                      e.preventDefault();
-                    }
-                  }}
+                  }`}
                 >
                   <item.icon size={20} />
                   <span className="text-xs">{item.name}</span>
