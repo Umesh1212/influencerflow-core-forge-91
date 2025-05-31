@@ -1,0 +1,29 @@
+{
+  "meta": {
+    "generatedAt": "2025-05-31T17:06:34.501Z",
+    "tasksAnalyzed": 2,
+    "totalTasks": 18,
+    "analysisCount": 2,
+    "thresholdScore": 7,
+    "projectName": "Taskmaster",
+    "usedResearch": true
+  },
+  "complexityAnalysis": [
+    {
+      "taskId": 8,
+      "taskTitle": "Outreach Backend (Email, Voice Notes, Chat)",
+      "complexityScore": 9,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Break down the 'Outreach Backend' task into subtasks covering: 1. Multilingual Email Service (FastAPI endpoint, Jinja2 templates, GPT-4o/pre-translated content, Supabase/SES/SendGrid integration). 2. Voice Note Synthesis API (text input, ElevenLabs integration, Supabase Storage for audio, URL return). 3. Voice Note Reception & Transcription API (audio input, Supabase Storage, optional Whisper STT). 4. WebSocket Chat Server (FastAPI, `/ws/chat/{campaign_creator_id}` endpoint, real-time message handling). 5. Message Persistence Logic (database interactions for storing/retrieving messages in `messages` table, linking to `campaign_creators` and `sender_id`). 6. API endpoint definitions and security for all outreach backend services.",
+      "reasoning": "High complexity due to integrating three distinct backend services (email, voice notes, chat), involving multiple external APIs (ElevenLabs, Whisper, GPT-4o, email providers), real-time WebSocket communication, and complex data handling for multilingual content and media storage."
+    },
+    {
+      "taskId": 9,
+      "taskTitle": "Outreach Frontend UI (Inbox & Chat)",
+      "complexityScore": 8,
+      "recommendedSubtasks": 7,
+      "expansionPrompt": "Break down the 'Outreach Frontend UI' task into subtasks covering: 1. Inbox/Chat Thread List UI (Next.js, separate views for `/app/inbox` and `/creator/chat`). 2. Message Display Component (chronological order, rendering text, file attachments, voice note players). 3. Message Input Component (text field, file upload button, voice note recording/sending UI). 4. WebSocket Client Integration (connecting to backend, sending/receiving real-time messages). 5. Voice Note Interaction UI (recording controls, playback controls for received voice notes). 6. File Attachment Handling (UI for selecting files, uploading via backend API, displaying attachments). 7. Creator Offer Response UI (Accept, Counter Offer, Decline buttons and API calls to update `campaign_creators.status`).",
+      "reasoning": "High complexity due to building a real-time chat interface with diverse functionalities (text, file, voice messages), WebSocket integration, state management for dynamic updates, UI for voice recording/playback, and specific creator action workflows. Responsive design across devices also adds to the effort."
+    }
+  ]
+}
