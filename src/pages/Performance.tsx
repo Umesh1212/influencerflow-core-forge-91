@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { TrendingUp, TrendingDown, Eye, Target, DollarSign, BarChart3 } from 'lucide-react';
@@ -164,7 +163,7 @@ const Performance = () => {
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {mockKPIs.map((kpi) => (
+        {kpis.map((kpi) => (
           <KPICard key={kpi.id} kpi={kpi} isLoading={isLoading} />
         ))}
       </div>

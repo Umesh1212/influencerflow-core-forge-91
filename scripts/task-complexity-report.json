@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generatedAt": "2025-05-31T17:06:34.501Z",
-    "tasksAnalyzed": 2,
-    "totalTasks": 18,
-    "analysisCount": 2,
-    "thresholdScore": 7,
+    "generatedAt": "2025-06-01T06:51:32.877Z",
+    "tasksAnalyzed": 1,
+    "totalTasks": 30,
+    "analysisCount": 3,
+    "thresholdScore": 5,
     "projectName": "Taskmaster",
     "usedResearch": true
   },
@@ -24,6 +24,14 @@
       "recommendedSubtasks": 7,
       "expansionPrompt": "Break down the 'Outreach Frontend UI' task into subtasks covering: 1. Inbox/Chat Thread List UI (Next.js, separate views for `/app/inbox` and `/creator/chat`). 2. Message Display Component (chronological order, rendering text, file attachments, voice note players). 3. Message Input Component (text field, file upload button, voice note recording/sending UI). 4. WebSocket Client Integration (connecting to backend, sending/receiving real-time messages). 5. Voice Note Interaction UI (recording controls, playback controls for received voice notes). 6. File Attachment Handling (UI for selecting files, uploading via backend API, displaying attachments). 7. Creator Offer Response UI (Accept, Counter Offer, Decline buttons and API calls to update `campaign_creators.status`).",
       "reasoning": "High complexity due to building a real-time chat interface with diverse functionalities (text, file, voice messages), WebSocket integration, state management for dynamic updates, UI for voice recording/playback, and specific creator action workflows. Responsive design across devices also adds to the effort."
+    },
+    {
+      "taskId": 5,
+      "taskTitle": "Creator Discovery UI - Search & Filtering",
+      "complexityScore": 7,
+      "recommendedSubtasks": 7,
+      "expansionPrompt": "Decompose the 'Creator Discovery UI - Search & Filtering' task. Identify subtasks for: a) developing the creator profile card component and the main list display, b) implementing UI and logic for each distinct filtering mechanism (platform, audience size, niche, language), c) implementing UI and logic for keyword search, and d) integrating all features and managing overall page state for dynamic list updates.",
+      "reasoning": "The task involves developing multiple UI components (creator cards, filter controls for platform, audience, niche, language, and a search bar), implementing distinct logic for each filter type and search, and managing their combined state to dynamically update the displayed creator list. This warrants several focused subtasks for modular development and clarity."
     }
   ]
 }
