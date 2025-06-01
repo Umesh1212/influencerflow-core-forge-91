@@ -316,51 +316,51 @@ const Discovery = () => {
     const categoryDisplay = stats?.content_specialization?.primary_niches?.[0] || 'N/A';
 
     return (
-      <Card 
-        className="bg-surface-elevated border-subtle card-hover cursor-pointer"
-        onClick={() => setSelectedCreator(creator)}
-      >
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3 mb-3">
-            <img 
+    <Card 
+      className="bg-surface-elevated border-subtle card-hover cursor-pointer"
+      onClick={() => setSelectedCreator(creator)}
+    >
+      <CardContent className="p-4">
+        <div className="flex items-center gap-3 mb-3">
+          <img 
               src={avatarUrl} 
               alt={displayName}
-              className="w-12 h-12 rounded-full object-cover"
-            />
-            <div>
+            className="w-12 h-12 rounded-full object-cover"
+          />
+          <div>
               <h3 className="text-body text-primary font-semibold">{displayName}</h3>
               <p className="text-caption text-secondary">{platformDisplay}</p>
             </div>
-          </div>
-          <div className="space-y-2 mb-4">
-            <div className="flex justify-between">
-              <span className="text-caption text-secondary">Followers</span>
+        </div>
+        <div className="space-y-2 mb-4">
+          <div className="flex justify-between">
+            <span className="text-caption text-secondary">Followers</span>
               <span className="text-caption text-primary">{followersCount}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-caption text-secondary">Engagement</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-caption text-secondary">Engagement</span>
               <span className="text-caption text-primary">{engagementRate}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-caption text-secondary">Category</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-caption text-secondary">Category</span>
               <span className="text-caption text-primary">{categoryDisplay}</span>
             </div>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="w-full border border-subtle hover:bg-surface-hover"
-            onClick={(e) => {
-              e.stopPropagation();
-              // Add to shortlist logic here
-            }}
-          >
-            <Plus size={14} className="mr-2" />
-            Add to Shortlist
-          </Button>
-        </CardContent>
-      </Card>
-    );
+        </div>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="w-full border border-subtle hover:bg-surface-hover"
+          onClick={(e) => {
+            e.stopPropagation();
+            // Add to shortlist logic here
+          }}
+        >
+          <Plus size={14} className="mr-2" />
+          Add to Shortlist
+        </Button>
+      </CardContent>
+    </Card>
+  );
   };
 
   return (
@@ -393,26 +393,26 @@ const Discovery = () => {
         {/* Conditionally render the entire block of filter groups */}
         {areAllFiltersOpen && (
           <>
-            {filters.map((filterGroup) => (
-              <div key={filterGroup.category}>
-                <h3 className="text-caption text-secondary mb-2 uppercase tracking-wide">{filterGroup.category}</h3>
-                <div className="flex flex-wrap gap-2">
-                  {filterGroup.options.map((option) => (
-                    <button
-                      key={option}
-                      onClick={() => toggleFilter(option)}
-                      className={`px-3 py-2 rounded-default text-caption transition-colors ${
-                        selectedFilters.includes(option)
-                          ? 'bg-primary-500 text-white'
-                          : 'bg-surface-elevated text-secondary hover:bg-surface-hover hover:text-primary border border-subtle'
-                      }`}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
+        {filters.map((filterGroup) => (
+          <div key={filterGroup.category}>
+            <h3 className="text-caption text-secondary mb-2 uppercase tracking-wide">{filterGroup.category}</h3>
+            <div className="flex flex-wrap gap-2">
+              {filterGroup.options.map((option) => (
+                <button
+                  key={option}
+                  onClick={() => toggleFilter(option)}
+                  className={`px-3 py-2 rounded-default text-caption transition-colors ${
+                    selectedFilters.includes(option)
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-surface-elevated text-secondary hover:bg-surface-hover hover:text-primary border border-subtle'
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
           </>
         )}
       </div>
@@ -480,83 +480,83 @@ const Discovery = () => {
         const detailAvgComments = detailStats?.social_platforms?.instagram?.avg_comments ?? 'N/A'; // Assuming TikTok/YT might not have this readily
 
         return (
-          <div className="fixed inset-y-0 right-0 w-drawer bg-surface-elevated border-l border-subtle z-40 animate-slide-in-right overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-heading text-primary font-semibold">Creator Details</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedCreator(null)}
-                  className="text-secondary hover:text-primary"
-                >
-                  ×
-                </Button>
-              </div>
-              
-              <div className="flex items-center gap-4 mb-6">
-                <img 
+        <div className="fixed inset-y-0 right-0 w-drawer bg-surface-elevated border-l border-subtle z-40 animate-slide-in-right overflow-y-auto">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-heading text-primary font-semibold">Creator Details</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedCreator(null)}
+                className="text-secondary hover:text-primary"
+              >
+                ×
+              </Button>
+            </div>
+            
+            <div className="flex items-center gap-4 mb-6">
+              <img 
                   src={detailAvatarUrl} 
                   alt={detailDisplayName}
-                  className="w-16 h-16 rounded-full object-cover"
-                />
-                <div>
+                className="w-16 h-16 rounded-full object-cover"
+              />
+              <div>
                   <h4 className="text-subhead text-primary font-semibold">{detailDisplayName}</h4>
                   <p className="text-body text-secondary">{detailPlatform}</p>
                 </div>
-              </div>
+            </div>
 
-              {/* Tabs */}
-              <div className="border-b border-subtle mb-6">
-                <div className="flex gap-6">
-                  <button className="pb-3 border-b-2 border-primary-500 text-primary">Stats</button>
-                  <button className="pb-3 text-secondary hover:text-primary">Audience</button>
-                  <button className="pb-3 text-secondary hover:text-primary">Past Brands</button>
-                </div>
+            {/* Tabs */}
+            <div className="border-b border-subtle mb-6">
+              <div className="flex gap-6">
+                <button className="pb-3 border-b-2 border-primary-500 text-primary">Stats</button>
+                <button className="pb-3 text-secondary hover:text-primary">Audience</button>
+                <button className="pb-3 text-secondary hover:text-primary">Past Brands</button>
               </div>
+            </div>
 
-              {/* Stats Content */}
-              <div className="space-y-4 mb-8">
-                <div className="grid grid-cols-2 gap-4">
-                  <Card className="bg-bg-default border-subtle">
-                    <CardContent className="p-4 text-center">
-                      <p className="text-caption text-secondary">Followers</p>
+            {/* Stats Content */}
+            <div className="space-y-4 mb-8">
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="bg-bg-default border-subtle">
+                  <CardContent className="p-4 text-center">
+                    <p className="text-caption text-secondary">Followers</p>
                       <p className="text-subhead text-primary font-semibold">{detailFollowers}</p>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-bg-default border-subtle">
-                    <CardContent className="p-4 text-center">
-                      <p className="text-caption text-secondary">Engagement</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-bg-default border-subtle">
+                  <CardContent className="p-4 text-center">
+                    <p className="text-caption text-secondary">Engagement</p>
                       <p className="text-subhead text-primary font-semibold">{detailEngagement}</p>
-                    </CardContent>
-                  </Card>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-secondary">Total Posts</span>
+                  </CardContent>
+                </Card>
+              </div>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-secondary">Total Posts</span>
                     <span className="text-primary">{detailTotalPosts}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-secondary">Avg. Likes</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-secondary">Avg. Likes</span>
                     {/* Ensure detailAvgLikes is a string or number before toLocaleString if it can be 'N/A' directly */}
                     <span className="text-primary">{typeof detailAvgLikes === 'number' ? detailAvgLikes.toLocaleString() : detailAvgLikes}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-secondary">Avg. Comments</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-secondary">Avg. Comments</span>
                     <span className="text-primary">{typeof detailAvgComments === 'number' ? detailAvgComments.toLocaleString() : detailAvgComments}</span>
                   </div>
-                </div>
               </div>
-
-              {/* Invite Button */}
-              <Button 
-                onClick={() => handleInviteCreator(selectedCreator)}
-                className="w-full bg-primary-500 hover:bg-primary-600 text-white"
-              >
-                Invite to Campaign
-              </Button>
             </div>
+
+            {/* Invite Button */}
+            <Button 
+              onClick={() => handleInviteCreator(selectedCreator)}
+              className="w-full bg-primary-500 hover:bg-primary-600 text-white"
+            >
+              Invite to Campaign
+            </Button>
           </div>
+        </div>
         );
       })()}
 

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,6 +15,7 @@ import Contracts from "./pages/Contracts";
 import Payments from "./pages/Payments";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
+import NewCampaign from "./pages/NewCampaign";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +36,7 @@ const App = () => (
                 </ProtectedRoute>
               }>
                 <Route index element={<Campaigns />} />
+                <Route path="campaigns/new" element={<NewCampaign />} />
                 <Route path="discovery" element={<Discovery />} />
                 <Route path="inbox" element={<Inbox />} />
                 <Route path="performance" element={<Performance />} />

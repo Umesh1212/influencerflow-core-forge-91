@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, BarChart3, Search, MessageSquare, FileText, CreditCard, TrendingUp, Settings, Plus, LogOut, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,6 +20,7 @@ const Layout = () => {
   const [isMenuExpanded, setIsMenuExpanded] = useState(true);
   const location = useLocation();
   const { signOut, userRole } = useAuth();
+  const navigate = useNavigate();
 
   const getBreadcrumb = () => {
     const currentItem = navigationItems.find(item => item.path === location.pathname);
@@ -177,13 +177,16 @@ const Layout = () => {
 
           {/* Action Slot */}
           <div className="flex items-center gap-3">
-            {userRole && (
+            {/* {userRole && (
               <span className="text-caption text-secondary capitalize">
                 {userRole}
               </span>
-            )}
-            {location.pathname === '/' && (
-              <Button className="bg-primary-500 hover:bg-primary-600 text-white button-press focus-ring">
+            )} */}
+            {location.pathname === '/' && (userRole === 'brand' || userRole === 'agency') && (
+              <Button 
+                className="bg-primary-500 hover:bg-primary-600 text-white button-press focus-ring"
+                onClick={() => navigate('/campaigns/new')}
+              >
                 <Plus size={16} className="mr-2" />
                 New Campaign
               </Button>

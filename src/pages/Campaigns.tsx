@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,10 +5,12 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Users, DollarSign, TrendingUp, Calendar } from 'lucide-react';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Campaigns = () => {
   const { data: campaigns, isLoading, error } = useCampaigns();
   const { userRole } = useAuth();
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -80,12 +81,6 @@ const Campaigns = () => {
           <h1 className="text-heading font-semibold">Campaigns</h1>
           <p className="text-secondary">Manage your influencer marketing campaigns</p>
         </div>
-        {(userRole === 'brand' || userRole === 'agency') && (
-          <Button className="bg-primary-500 hover:bg-primary-600 text-white">
-            <Plus size={16} className="mr-2" />
-            New Campaign
-          </Button>
-        )}
       </div>
 
       {/* Stats Cards */}
@@ -209,7 +204,10 @@ const Campaigns = () => {
                   </p>
                   {(userRole === 'brand' || userRole === 'agency') && (
                     <div className="mt-6">
-                      <Button className="bg-primary-500 hover:bg-primary-600 text-white">
+                      <Button 
+                        className="bg-primary-500 hover:bg-primary-600 text-white"
+                        onClick={() => navigate('/campaigns/new')}
+                      >
                         <Plus size={16} className="mr-2" />
                         Create Campaign
                       </Button>
