@@ -35,18 +35,22 @@ const CampaignDetail = () => {
       setLoading(true);
       setError(null);
 
+      console.log(`[CampaignDetail] Fetching campaign with ID: ${campaignId}`);
+
       const { data, error: fetchError } = await supabase
         .from('campaigns')
         .select(`
           *,
           brand:brands(name),
-          campaign_creators!inner(
+          campaign_creators!left(
             id,
             creator:creators(id, display_name, stats) 
           )
         `)
         .eq('id', campaignId)
         .single();
+      
+      console.log('[CampaignDetail] Supabase fetch result:', { data, fetchError });
 
       if (fetchError) {
         console.error('Error fetching campaign details:', fetchError);
