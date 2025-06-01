@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Users, DollarSign, TrendingUp, Calendar } from 'lucide-react';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Campaigns = () => {
   const { data: campaigns, isLoading, error } = useCampaigns();
@@ -142,55 +142,57 @@ const Campaigns = () => {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {campaigns && campaigns.length > 0 ? (
           campaigns.map((campaign) => (
-            <Card key={campaign.id} className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg">{campaign.name}</CardTitle>
-                    <CardDescription>
-                      {campaign.brand?.name || 'Unknown Brand'}
-                    </CardDescription>
+            <Link key={campaign.id} to={`/campaigns/${campaign.id}`} className="block hover:no-underline">
+              <Card className="hover:shadow-md transition-shadow h-full flex flex-col">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">{campaign.name}</CardTitle>
+                      <CardDescription>
+                        {campaign.brand?.name || 'Unknown Brand'}
+                      </CardDescription>
+                    </div>
+                    <Badge className={getStatusColor(campaign.status || 'draft')}>
+                      {campaign.status || 'draft'}
+                    </Badge>
                   </div>
-                  <Badge className={getStatusColor(campaign.status || 'draft')}>
-                    {campaign.status || 'draft'}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Budget:</span>
-                    <span className="font-medium">
-                      ${Number(campaign.budget_numeric || 0).toLocaleString()} {campaign.currency}
-                    </span>
-                  </div>
-                  
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Creators:</span>
-                    <span className="font-medium">
-                      {campaign.campaign_creators?.length || 0}
-                    </span>
-                  </div>
-                  
-                  {campaign.start_date && (
+                </CardHeader>
+                <CardContent className="flex-grow flex flex-col justify-between">
+                  <div className="space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Start Date:</span>
+                      <span className="text-muted-foreground">Budget:</span>
                       <span className="font-medium">
-                        {new Date(campaign.start_date).toLocaleDateString()}
+                        ${Number(campaign.budget_numeric || 0).toLocaleString()} {campaign.currency}
                       </span>
                     </div>
-                  )}
-                  
-                  {campaign.brief && (
-                    <div className="mt-3">
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {campaign.brief}
-                      </p>
+                    
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Creators:</span>
+                      <span className="font-medium">
+                        {campaign.campaign_creators?.length || 0}
+                      </span>
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                    
+                    {campaign.start_date && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Start Date:</span>
+                        <span className="font-medium">
+                          {new Date(campaign.start_date).toLocaleDateString()}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {campaign.brief && (
+                      <div className="mt-3">
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {campaign.brief}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           ))
         ) : (
           <div className="col-span-full">

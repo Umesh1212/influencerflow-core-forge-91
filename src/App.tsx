@@ -16,6 +16,7 @@ import Payments from "./pages/Payments";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import NewCampaign from "./pages/NewCampaign";
+import CampaignDetail from "./pages/CampaignDetail";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
               }>
                 <Route index element={<Campaigns />} />
                 <Route path="campaigns/new" element={<NewCampaign />} />
+                <Route path="campaigns/:campaignId" element={<CampaignDetail />} />
                 <Route path="discovery" element={<Discovery />} />
                 <Route path="inbox" element={<Inbox />} />
                 <Route path="performance" element={<Performance />} />

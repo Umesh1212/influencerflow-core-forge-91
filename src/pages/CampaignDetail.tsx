@@ -8,8 +8,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Label } from '@/components/ui/label';
 
 type Campaign = Database['public']['Tables']['campaigns']['Row'] & {
-  brand: { name: string } | null; // From the select query in useCampaigns
-  // campaign_creators: any[]; // Define this more accurately later
+  brand: { name: string | null } | null; // Ensure brand name can also be null
+  campaign_creators: {
+    id: string;
+    creator: {
+      display_name: string | null;
+      ig_id?: string | null; // Assuming these might be there from useCampaigns example
+      // Add other fields if fetched, like avatar from creator.stats
+    } | null;
+  }[] | null; // Define the shape of campaign_creators
 };
 
 const CampaignDetail = () => {
@@ -20,6 +27,7 @@ const CampaignDetail = () => {
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isRemovingCreator, setIsRemovingCreator] = useState<Record<string, boolean>>({}); // Loading state for remove buttons
 
   useEffect(() => {
     const fetchCampaign = async () => {
@@ -31,7 +39,11 @@ const CampaignDetail = () => {
         .from('campaigns')
         .select(`
           *,
-          brand:brands(name)
+          brand:brands(name),
+          campaign_creators!inner(
+            id,
+            creator:creators(id, display_name, stats) 
+          )
         `)
         .eq('id', campaignId)
         .single();
@@ -70,9 +82,46 @@ const CampaignDetail = () => {
     }
   };
 
+  const handleRemoveCreatorFromCampaign = async (campaignCreatorId: string, creatorDisplayName: string | null) => {
+    if (!campaignId) return;
+    if (!window.confirm(`Are you sure you want to remove ${creatorDisplayName || 'this creator'} from the campaign?`)) {
+      return;
+    }
+
+    setIsRemovingCreator(prev => ({ ...prev, [campaignCreatorId]: true }));
+    const { error: deleteError } = await supabase
+      .from('campaign_creators')
+      .delete()
+      .eq('id', campaignCreatorId); // Use the specific campaign_creator record ID for deletion
+    
+    setIsRemovingCreator(prev => ({ ...prev, [campaignCreatorId]: false }));
+
+    if (deleteError) {
+      console.error('Error removing creator from campaign:', deleteError);
+      setError(`Failed to remove creator: ${deleteError.message}`);
+    } else {
+      // Optimistically update UI or re-fetch campaign details
+      setCampaign(prevCampaign => {
+        if (!prevCampaign || !prevCampaign.campaign_creators) return prevCampaign;
+        return {
+          ...prevCampaign,
+          campaign_creators: prevCampaign.campaign_creators.filter(cc => cc.id !== campaignCreatorId)
+        };
+      });
+      // Optionally, add a success toast
+    }
+  };
+
   if (loading) return <p className="p-4">Loading campaign details...</p>;
   if (error) return <p className="p-4 text-danger-500">Error: {error}</p>;
   if (!campaign) return <p className="p-4">Campaign not found.</p>;
+
+  // Access goals_json with a more explicit cast on campaign if direct access fails type checks
+  const campaignDataForGoals = campaign as Campaign & { goals_json?: { objective?: string; kpis?: string[] } | null };
+  const goals = (campaignDataForGoals.goals_json && typeof campaignDataForGoals.goals_json === 'object' && 
+                 !Array.isArray(campaignDataForGoals.goals_json)) 
+                 ? campaignDataForGoals.goals_json 
+                 : null;
 
   // TODO: Add RLS policy for DELETE on campaigns table
   // RLS: Allow delete if user owns the brand associated with the campaign OR is admin.
@@ -98,7 +147,7 @@ const CampaignDetail = () => {
         <CardContent className="space-y-6">
           <div>
             <h3 className="font-semibold text-lg mb-2">Campaign Brief</h3>
-            <p className="text-secondarywhitespace-pre-wrap">{campaign.brief || 'No brief provided.'}</p>
+            <p className="text-secondary whitespace-pre-wrap">{campaign.brief || 'No brief provided.'}</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -116,11 +165,15 @@ const CampaignDetail = () => {
             </div>
           </div>
 
-          {campaign.goals_json && typeof campaign.goals_json === 'object' && (
+          {goals && (
             <div>
               <h3 className="font-semibold text-lg mb-2">Goals & KPIs</h3>
-              <p className="text-secondary"><span className="font-medium">Objective:</span> {(campaign.goals_json as any).objective || 'N/A'}</p>
-              <p className="text-secondary"><span className="font-medium">KPIs:</span> {(campaign.goals_json as any).kpis?.join(', ') || 'N/A'}</p>
+              <p className="text-secondary"><span className="font-medium">Objective:</span> {goals.objective || 'N/A'}</p>
+              <p className="text-secondary"><span className="font-medium">KPIs:</span> 
+                {Array.isArray(goals.kpis) 
+                  ? goals.kpis.join(', ') 
+                  : 'N/A'}
+              </p>
             </div>
           )}
 
@@ -128,8 +181,31 @@ const CampaignDetail = () => {
 
           <div>
             <h3 className="font-semibold text-lg mb-2">Associated Creators</h3>
-            {/* TODO: List associated creators from campaign_creators table */}
-            <p className="text-secondary">Creator management will be available here.</p>
+            {campaign.campaign_creators && campaign.campaign_creators.length > 0 ? (
+              <ul className="space-y-3">
+                {campaign.campaign_creators.map(cc => (
+                  cc.creator && (
+                    <li key={cc.id} className="flex items-center justify-between p-3 border rounded-md bg-surface-hover">
+                      <span>
+                        {cc.creator.display_name}
+                        {/* Can add more creator details here if needed */}
+                      </span>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleRemoveCreatorFromCampaign(cc.id, cc.creator?.display_name || 'this creator')}
+                        disabled={isRemovingCreator[cc.id]}
+                        className="text-danger-500 hover:text-danger-600 hover:bg-danger-500/10"
+                      >
+                        {isRemovingCreator[cc.id] ? 'Removing...' : 'Remove'}
+                      </Button>
+                    </li>
+                  )
+                ))}
+              </ul>
+            ) : (
+              <p className="text-secondary">No creators have been added to this campaign yet.</p>
+            )}
             <Link to={`/discovery?campaignId=${campaignId}`}>
               <Button className="mt-4">
                 Find & Add Creators

@@ -3,8 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search, Plus, ChevronDown, ChevronUp, Filter as FilterIcon, EyeOff as EyeOffIcon } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCreators, Creator } from '@/hooks/useCreators';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from "sonner"; // Correct import for sonner
 
 // Define interface for the 'stats' JSONB object
 interface SocialPlatformStats {
@@ -58,11 +60,16 @@ interface CreatorStats {
 }
 
 const Discovery = () => {
+  const [searchParams] = useSearchParams(); // Get URL search params
+  const activeCampaignId = searchParams.get('campaignId'); // Read campaignId
+
   const [inputValue, setInputValue] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [areAllFiltersOpen, setAreAllFiltersOpen] = useState(true);
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
+  const [addingCreatorToCampaign, setAddingCreatorToCampaign] = useState<Record<string, boolean>>({}); // To track loading state per button
+  const [addedCreatorIds, setAddedCreatorIds] = useState<Set<string>>(new Set()); // Track added creator IDs for current campaign context
   const navigate = useNavigate();
 
   const { data: fetchedCreators, isLoading, error } = useCreators();
@@ -86,6 +93,11 @@ const Discovery = () => {
       clearTimeout(timer);
     };
   }, [inputValue]);
+
+  // When activeCampaignId changes, reset the list of addedCreatorIds for the new campaign context
+  useEffect(() => {
+    setAddedCreatorIds(new Set());
+  }, [activeCampaignId]);
 
   // Memoized search and filter logic
   const processedCreators = useMemo(() => {
@@ -291,6 +303,47 @@ const Discovery = () => {
     navigate('/inbox', { state: { invitedCreator: creator } });
   };
 
+  const handleAddCreatorToCampaign = async (creatorId: string) => {
+    if (!activeCampaignId) {
+      toast.error("No active campaign selected to add creator to.");
+      console.error("No active campaign selected.");
+      return;
+    }
+    setAddingCreatorToCampaign(prev => ({ ...prev, [creatorId]: true }));
+    try {
+      if (addedCreatorIds.has(creatorId)) {
+        toast.info("Creator already added to this campaign.");
+        setAddingCreatorToCampaign(prev => ({ ...prev, [creatorId]: false }));
+        return;
+      }
+
+      const { error: insertError } = await supabase.from('campaign_creators').insert({
+        campaign_id: activeCampaignId,
+        creator_id: creatorId,
+        status_in_campaign: 'shortlisted' 
+      });
+
+      if (insertError) {
+        // The unique constraint error will have code '23505'
+        if (insertError.code === '23505') {
+          toast.error("Creator is already part of this campaign (database constraint).");
+          // Also update local state if DB says it's a duplicate
+          setAddedCreatorIds(prev => new Set(prev).add(creatorId)); 
+        } else {
+          throw insertError;
+        }
+      }
+      
+      toast.success("Creator successfully added to campaign!");
+      console.log("Creator added to campaign", { creatorId, activeCampaignId });
+      setAddedCreatorIds(prev => new Set(prev).add(creatorId));
+    } catch (error) {
+      console.error("Error adding creator to campaign:", error);
+      toast.error(`Failed to add creator: ${(error as Error).message}`);
+    }
+    setAddingCreatorToCampaign(prev => ({ ...prev, [creatorId]: false }));
+  };
+
   const CreatorCard = ({ creator }: { creator: Creator }) => {
     const stats = creator.stats as CreatorStats | null;
 
@@ -352,11 +405,23 @@ const Discovery = () => {
           className="w-full border border-subtle hover:bg-surface-hover"
           onClick={(e) => {
             e.stopPropagation();
-            // Add to shortlist logic here
+            if (activeCampaignId) {
+              if (!addedCreatorIds.has(creator.id)) { // Check before calling
+                handleAddCreatorToCampaign(creator.id);
+              }
+            } else {
+              console.log('Shortlist (no campaign context):', creator.id);
+            }
           }}
+          disabled={addingCreatorToCampaign[creator.id] || (activeCampaignId ? addedCreatorIds.has(creator.id) : false)}
         >
-          <Plus size={14} className="mr-2" />
-          Add to Shortlist
+          {addingCreatorToCampaign[creator.id] ? (
+            'Adding...'
+          ) : activeCampaignId ? (
+            addedCreatorIds.has(creator.id) ? '✓ Added to Campaign' : <><Plus size={14} className="mr-2" /> Add to Campaign</>
+          ) : (
+            <><Plus size={14} className="mr-2" /> Add to Shortlist</>
+          )}
         </Button>
       </CardContent>
     </Card>
