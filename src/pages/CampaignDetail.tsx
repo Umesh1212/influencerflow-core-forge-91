@@ -11,10 +11,11 @@ type Campaign = Database['public']['Tables']['campaigns']['Row'] & {
   brand: { name: string | null } | null; // Ensure brand name can also be null
   campaign_creators: {
     id: string;
+    status_in_campaign: string | null;
     creator: {
+      id: string;
       display_name: string | null;
-      ig_id?: string | null; // Assuming these might be there from useCampaigns example
-      // Add other fields if fetched, like avatar from creator.stats
+      stats?: any;
     } | null;
   }[] | null; // Define the shape of campaign_creators
 };
@@ -42,9 +43,11 @@ const CampaignDetail = () => {
         .select(`
           *,
           brand:brands(name),
-          campaign_creators!left(
+          campaign_creators(
             id,
-            creator:creators(id, display_name, stats) 
+            status_in_campaign,
+            creator_id, // Temporarily fetch creator_id directly
+            creator:creators(id, display_name) // Keep creator simple for now
           )
         `)
         .eq('id', campaignId)
@@ -57,7 +60,8 @@ const CampaignDetail = () => {
         setError('Failed to load campaign details. It might not exist or you may not have permission.');
         setCampaign(null);
       } else {
-        setCampaign(data as Campaign);
+        // Let type inference work, or cast more carefully if needed
+        setCampaign(data as any as Campaign); // Using any as intermediate step for now due to complex types
       }
       setLoading(false);
     };
@@ -190,18 +194,18 @@ const CampaignDetail = () => {
                 {campaign.campaign_creators.map(cc => (
                   cc.creator && (
                     <li key={cc.id} className="flex items-center justify-between p-3 border rounded-md bg-surface-hover">
-                      <span>
-                        {cc.creator.display_name}
-                        {/* Can add more creator details here if needed */}
-                      </span>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{cc.creator.display_name}</span>
+                        <span className="text-xs text-muted-foreground capitalize">Status: {cc.status_in_campaign || 'N/A'}</span>
+                      </div>
                       <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => handleRemoveCreatorFromCampaign(cc.id, cc.creator?.display_name || 'this creator')}
-                        disabled={isRemovingCreator[cc.id]}
-                        className="text-danger-500 hover:text-danger-600 hover:bg-danger-500/10"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => console.log(`Initiate outreach for campaign: ${campaignId}, creator: ${cc.creator?.id}`)}
+                        // disabled={isInitiatingOutreach[cc.creator.id]} // TODO: Add loading state if needed
                       >
-                        {isRemovingCreator[cc.id] ? 'Removing...' : 'Remove'}
+                        {/* {isInitiatingOutreach[cc.creator.id] ? 'Processing...' : 'Initiate Outreach'} */}
+                        Initiate Outreach
                       </Button>
                     </li>
                   )
