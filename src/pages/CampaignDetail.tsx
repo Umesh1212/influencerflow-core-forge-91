@@ -46,8 +46,8 @@ const CampaignDetail = () => {
           campaign_creators(
             id,
             status_in_campaign,
-            creator_id, // Temporarily fetch creator_id directly
-            creator:creators(id, display_name) // Keep creator simple for now
+            creator_id,
+            creator:creators(id, display_name)
           )
         `)
         .eq('id', campaignId)
